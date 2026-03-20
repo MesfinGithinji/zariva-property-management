@@ -50,9 +50,9 @@ export default function Sidebar({ userType, currentPath = "", pendingMaintenance
       <div className="mb-10">
         <a href="/">
           <img
-            src="/logo.png"
+            src="/logo_transparent.png"
             alt="Zariva"
-            className="h-16 w-auto object-contain"
+            className="h-24 w-auto object-contain"
           />
         </a>
       </div>

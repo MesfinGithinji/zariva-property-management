@@ -1,4 +1,9 @@
 export const landlordData = {
+  profile: {
+    name: "Matty Otieno",
+    email: "matty@zariva.com",
+    phone: "+254 722 123 456",
+  },
   overview: {
     totalProperties: 12,
     totalUnits: 48,

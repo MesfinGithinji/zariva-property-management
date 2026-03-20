@@ -19,7 +19,7 @@ export default function NotFound() {
         >
           <a href="/">
             <img
-              src="/logo.png"
+              src="/logo_transparent.png"
               alt="Zariva"
               className="h-24 w-auto object-contain mx-auto drop-shadow-2xl"
             />

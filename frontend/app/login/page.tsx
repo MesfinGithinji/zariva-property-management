@@ -24,7 +24,7 @@ export default function Login() {
         >
           <motion.a href="/" className="inline-block mb-8">
             <img
-              src="/logo.png"
+              src="/logo_transparent.png"
               alt="Zariva"
               className="h-24 w-auto object-contain drop-shadow-2xl"
             />
@@ -74,7 +74,7 @@ export default function Login() {
           <div className="lg:hidden mb-8">
             <a href="/">
               <img
-                src="/logo.png"
+                src="/logo_transparent.png"
                 alt="Zariva"
                 className="h-20 w-auto object-contain mx-auto"
               />
