@@ -1,44 +1,38 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 160 55% 19%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 45 83% 52%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 160 55% 19%;
-    --radius: 0.5rem;
-  }
+@theme {
+  /* Brand Colors */
+  --color-primary-50: #f0f7f4;
+  --color-primary-100: #dceee7;
+  --color-primary-200: #b9dccf;
+  --color-primary-300: #8bc4b0;
+  --color-primary-400: #5ca58e;
+  --color-primary-500: #3d8a74;
+  --color-primary-600: #2d6f5d;
+  --color-primary-700: #26594c;
+  --color-primary-800: #22483e;
+  --color-primary-900: #1d3c35;
+  --color-primary-950: #1B4332;
+
+  --color-gold-50: #fdfbf3;
+  --color-gold-100: #faf5e1;
+  --color-gold-200: #f4e9c3;
+  --color-gold-300: #ecd89d;
+  --color-gold-400: #e3c36f;
+  --color-gold-500: #D4AF37;
+  --color-gold-600: #c19420;
+  --color-gold-700: #a0781b;
+  --color-gold-800: #84601c;
+  --color-gold-900: #6f4f1c;
+  --color-gold-950: #41290d;
+
+  --color-cream: #F5F1E8;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
+* {
+  border-color: rgb(226 232 240);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+body {
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
