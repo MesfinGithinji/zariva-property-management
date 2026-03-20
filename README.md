@@ -7,17 +7,17 @@
   A modern, elegant property management system for landlords, tenants, and administrators.
 </div>
 
-## 🏢 About
+## About
 
 Zariva Property Management System is a comprehensive platform designed to streamline property management operations for **Zariva Africa Properties Ltd**. The system addresses inefficiencies in traditional property management by providing:
 
-- 📊 Real-time property and financial insights
-- 💬 Seamless communication between landlords, tenants, and property managers
-- 🔧 Efficient maintenance request handling
-- 💰 Automated rent collection and payment tracking
-- 📱 Mobile-responsive, user-friendly interface
+- Real-time property and financial insights
+- Seamless communication between landlords, tenants, and property managers
+- Efficient maintenance request handling
+- Automated rent collection and payment tracking
+- Mobile-responsive, user-friendly interface
 
-## 🚀 Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework**: Next.js 14 (App Router) with TypeScript
@@ -39,7 +39,7 @@ Zariva Property Management System is a comprehensive platform designed to stream
 - **Hosting**: AWS (ECS, RDS, S3, CloudFront)
 - **CI/CD**: GitHub Actions
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 zariva-property-management/
@@ -51,7 +51,7 @@ zariva-property-management/
 └── docker-compose.yml # Development environment
 ```
 
-## 🛠️ Local Development
+## Local Development
 
 ### Prerequisites
 - Node.js 18+ (we're using v24.11.1)
@@ -95,14 +95,14 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-## 🎨 Brand Colors
+## Brand Colors
 
 - **Primary (Forest Green)**: `#1B4332`
 - **Secondary (Gold)**: `#D4AF37`
 - **Accent (Cream)**: `#F5F1E8`
 - **Text**: `#1F2937`
 
-## 🌿 Branching Strategy
+## Branching Strategy
 
 - `main` - Production-ready code
 - `develop` - Integration branch
@@ -110,17 +110,17 @@ uvicorn main:app --reload
 - `fix/*` - Bug fixes
 - `chore/*` - Maintenance tasks
 
-## 📋 Contributing
+## Contributing
 
 1. Create a feature branch from `develop`
 2. Make your changes
 3. Create a Pull Request to `develop`
 4. Wait for review and approval
 
-## 📄 License
+## License
 
 Proprietary - Zariva Africa Properties Ltd © 2026
 
 ---
 
-Built with ❤️ for modern property management
+Built for modern property management
