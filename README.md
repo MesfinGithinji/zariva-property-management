@@ -1,7 +1,6 @@
 # Zariva Property Management System
 
 <div align="center">
-  <img src="./assets/ZAPL.png" alt="Zariva Africa Properties" width="400"/>
 
   **Your Trusted Real Estate Partner**
 
