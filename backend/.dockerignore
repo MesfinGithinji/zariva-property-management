@@ -1,0 +1,16 @@
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+.git
+.gitignore
+README.md
+.env
+.env.local
