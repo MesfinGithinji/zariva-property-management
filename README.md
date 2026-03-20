@@ -121,14 +121,6 @@ uvicorn main:app --reload
 
 Proprietary - Zariva Africa Properties Ltd © 2026
 
-## 📞 Contact
-
-**Zariva Africa Properties Ltd**
-- Email: info@zariafrica.com
-- Phone: +254 708 688 507
-- Website: www.zarivaafrica.com
-- Address: P.O. Box 15842, Nairobi, Kenya
-
 ---
 
 Built with ❤️ for modern property management
