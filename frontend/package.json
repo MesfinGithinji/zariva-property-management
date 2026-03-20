@@ -1,0 +1,31 @@
+{
+  "name": "zariva-frontend",
+  "version": "0.1.0",
+  "description": "Zariva Property Management - Frontend",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "author": "Zariva Africa Properties Ltd",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "next": "^16.2.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.0",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2"
+  }
+}
