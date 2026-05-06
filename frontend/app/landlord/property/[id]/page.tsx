@@ -2,174 +2,177 @@
 
 import { motion } from "framer-motion";
 import {
-  Building2,
-  MapPin,
-  TrendingUp,
-  DollarSign,
-  Calendar,
-  ArrowLeft,
-  Home,
-  Settings,
-  Wrench,
-  Shield,
-  Zap,
-  Droplet,
-  Car,
-  Move,
-  Camera,
-  CheckCircle2,
-  AlertCircle,
-  Clock,
-  Phone,
-  Mail,
-  ChevronLeft,
-  ChevronRight,
+  Building2, MapPin, TrendingUp, DollarSign, Calendar,
+  ArrowLeft, Home, Settings, Wrench, Shield, Zap,
+  Droplet, Car, Move, Camera, Phone, Mail,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { propertyDetailData } from "@/lib/mock-data";
 import { format } from "date-fns";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import Sidebar from "@/components/Sidebar";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { FadeCard } from "@/components/ui/fade-card";
+import { toast } from "sonner";
+
+const amenityIcons: Record<string, any> = {
+  shield: Shield, zap: Zap, droplet: Droplet,
+  car: Car, move: Move, camera: Camera,
+};
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-primary-950 text-white px-4 py-3 rounded-xl shadow-xl border border-gold-500/20 text-sm">
+        <p className="text-gold-400 font-medium mb-1">{label}</p>
+        <p>Collected: KES {payload[0]?.value?.toLocaleString()}</p>
+        {payload[1] && <p className="text-gray-400">Expected: KES {payload[1]?.value?.toLocaleString()}</p>}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function PropertyDetail() {
   const property = propertyDetailData;
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % property.images.length);
-  };
+  // Embla carousel
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, dragFree: false },
+    [Autoplay({ delay: 5000, stopOnInteraction: true })]
+  );
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
-  };
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+  const scrollTo = useCallback((i: number) => emblaApi?.scrollTo(i), [emblaApi]);
 
-  const amenityIcons: { [key: string]: any } = {
-    shield: Shield,
-    zap: Zap,
-    droplet: Droplet,
-    car: Car,
-    move: Move,
-    camera: Camera,
-  };
-
-  // Color mappings for stat cards (fix for Tailwind dynamic classes)
-  const colorClasses: { [key: string]: { bg: string; bgIcon: string; text: string } } = {
-    blue: { bg: "bg-blue-100", bgIcon: "bg-blue-100", text: "text-blue-600" },
-    green: { bg: "bg-green-100", bgIcon: "bg-green-100", text: "text-green-600" },
-    gold: { bg: "bg-gold-100", bgIcon: "bg-gold-100", text: "text-gold-600" },
-    purple: { bg: "bg-purple-100", bgIcon: "bg-purple-100", text: "text-purple-600" },
-  };
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", () => setSelectedIndex(emblaApi.selectedScrollSnap()));
+  }, [emblaApi]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-cream to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-[#F5F1E8]/40 to-gray-50">
       <Sidebar userType="landlord" currentPath="/landlord/properties" />
 
-      {/* Main Content */}
       <div className="ml-72 p-8">
-        {/* Back Button */}
+        {/* Back */}
         <motion.a
-          href="/landlord"
-          initial={{ opacity: 0, x: -20 }}
+          href="/landlord/properties"
+          initial={{ opacity: 0, x: -16 }}
           animate={{ opacity: 1, x: 0 }}
-          whileHover={{ x: -5 }}
-          className="inline-flex items-center gap-2 mb-6 text-primary-700 hover:text-primary-900 font-semibold transition-all"
+          whileHover={{ x: -4 }}
+          className="inline-flex items-center gap-2 mb-6 text-primary-700 hover:text-primary-900 font-semibold text-sm transition-all"
         >
-          <ArrowLeft size={20} />
-          Back to Dashboard
+          <ArrowLeft size={16} /> Back to Properties
         </motion.a>
 
-        {/* Header Section */}
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="flex items-start justify-between mb-8"
         >
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{property.name}</h1>
-              <p className="text-lg text-gray-600 flex items-center gap-2">
-                <MapPin size={20} className="text-primary-600" />
-                {property.address}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border-2 border-gray-200 shadow-lg transition-all"
-              >
-                <Settings size={20} className="inline mr-2" />
-                Manage
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl shadow-lg transition-all"
-              >
-                View Report
-              </motion.button>
-            </div>
+          <div>
+            <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">{property.type}</p>
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-1">{property.name}</h1>
+            <p className="text-gray-500 flex items-center gap-1.5 text-sm">
+              <MapPin size={14} className="text-primary-500" />{property.address}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => toast.info("Property management coming soon!")}
+              className="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-xl border border-gray-200 shadow-sm transition-all text-sm"
+            >
+              <Settings size={16} /> Manage
+            </button>
+            <button
+              onClick={() => toast.success("Report generation coming soon!")}
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl shadow-lg transition-all text-sm border border-gold-500/20"
+            >
+              View Report
+            </button>
           </div>
         </motion.div>
 
-        {/* Image Gallery */}
+        {/* ── Embla Carousel ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mb-8 relative bg-white rounded-2xl shadow-lg overflow-hidden"
+          className="mb-8 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
         >
-          <div className="relative h-96">
-            <img
-              src={property.images[currentImageIndex]}
-              alt={property.name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+          {/* Main slide */}
+          <div className="relative">
+            <div ref={emblaRef} className="overflow-hidden">
+              <div className="flex">
+                {property.images.map((img, idx) => (
+                  <div key={idx} className="relative flex-[0_0_100%] h-[420px]">
+                    <img
+                      src={img}
+                      alt={`${property.name} — image ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            {/* Image Navigation */}
+            {/* Arrows */}
             <button
-              onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full transition-all"
+              onClick={scrollPrev}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all"
             >
-              <ChevronLeft className="text-white" size={24} />
+              <ChevronLeft size={20} />
             </button>
             <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full transition-all"
+              onClick={scrollNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-all"
             >
-              <ChevronRight className="text-white" size={24} />
+              <ChevronRight size={20} />
             </button>
 
-            {/* Image Indicators */}
+            {/* Type badge */}
+            <div className="absolute top-4 left-4">
+              <span className="px-3 py-1.5 bg-gold-500 text-primary-950 font-bold rounded-lg shadow-lg text-sm">
+                {property.type}
+              </span>
+            </div>
+
+            {/* Dot indicators */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {property.images.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    idx === currentImageIndex ? 'bg-white w-8' : 'bg-white/50'
+                  onClick={() => scrollTo(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === selectedIndex ? "bg-white w-8" : "bg-white/50 w-2"
                   }`}
                 />
               ))}
             </div>
-
-            {/* Property Type Badge */}
-            <div className="absolute top-4 left-4">
-              <span className="px-4 py-2 bg-gold-500 text-primary-950 font-bold rounded-lg shadow-lg">
-                {property.type}
-              </span>
-            </div>
           </div>
 
-          {/* Thumbnail Strip */}
-          <div className="grid grid-cols-4 gap-2 p-4 bg-gray-50">
+          {/* Thumbnail strip */}
+          <div className="grid grid-cols-4 gap-2 p-3 bg-gray-50">
             {property.images.map((img, idx) => (
               <button
                 key={idx}
-                onClick={() => setCurrentImageIndex(idx)}
-                className={`relative h-20 rounded-lg overflow-hidden transition-all ${
-                  idx === currentImageIndex ? 'ring-4 ring-primary-500 scale-105' : 'opacity-60 hover:opacity-100'
+                onClick={() => scrollTo(idx)}
+                className={`relative h-20 rounded-xl overflow-hidden transition-all duration-200 ${
+                  idx === selectedIndex
+                    ? "ring-2 ring-primary-600 ring-offset-1 opacity-100"
+                    : "opacity-50 hover:opacity-80"
                 }`}
               >
                 <img src={img} alt="" className="w-full h-full object-cover" />
@@ -178,304 +181,188 @@ export default function PropertyDetail() {
           </div>
         </motion.div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           {[
-            {
-              label: "Total Units",
-              value: property.totalUnits,
-              icon: Building2,
-              color: "blue",
-              subtext: `${property.occupiedUnits} occupied`,
-            },
-            {
-              label: "Occupancy Rate",
-              value: `${property.occupancyRate}%`,
-              icon: TrendingUp,
-              color: "green",
-              subtext: `${property.vacantUnits} vacant`,
-            },
-            {
-              label: "Monthly Income",
-              value: `KES ${(property.monthlyIncome / 1000).toFixed(0)}K`,
-              icon: DollarSign,
-              color: "gold",
-              subtext: "Expected revenue",
-            },
-            {
-              label: "Property Value",
-              value: `KES ${(property.propertyValue / 1000000).toFixed(1)}M`,
-              icon: Home,
-              color: "purple",
-              subtext: `Built in ${property.yearBuilt}`,
-            },
-          ].map((stat, index) => {
-            const colors = colorClasses[stat.color];
-            return (
+            { label: "Total Units",    value: `${property.totalUnits}`,                          sub: `${property.occupiedUnits} occupied`,    icon: Building2,  color: "bg-primary-50 text-primary-700" },
+            { label: "Occupancy Rate", value: `${property.occupancyRate}%`,                       sub: `${property.vacantUnits} vacant`,         icon: TrendingUp, color: "bg-gold-50 text-gold-700"      },
+            { label: "Monthly Income", value: `KES ${(property.monthlyIncome / 1000).toFixed(0)}K`, sub: "Expected revenue",                    icon: DollarSign, color: "bg-emerald-50 text-emerald-700" },
+            { label: "Property Value", value: `KES ${(property.propertyValue / 1000000).toFixed(1)}M`, sub: `Built ${property.yearBuilt}`,     icon: Home,       color: "bg-purple-50 text-purple-700"   },
+          ].map((stat, i) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
+              key={stat.label}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + index * 0.1 }}
-              className="group relative bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all overflow-hidden"
+              transition={{ delay: 0.2 + i * 0.07 }}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
             >
-              <div className={`absolute top-0 right-0 w-32 h-32 ${colors.bg} rounded-bl-full opacity-30 group-hover:opacity-50 transition-opacity`}></div>
-              <div className="relative z-10">
-                <div className={`inline-flex p-3 ${colors.bgIcon} rounded-xl mb-4`}>
-                  <stat.icon className={colors.text} size={24} />
-                </div>
-                <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
-                <p className="text-3xl font-bold text-gray-900 mb-1">{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.subtext}</p>
+              <div className={`inline-flex p-2.5 rounded-xl mb-3 ${stat.color}`}>
+                <stat.icon size={18} />
               </div>
+              <p className="text-xs text-gray-400 mb-0.5">{stat.label}</p>
+              <p className="text-2xl font-bold text-gray-900 num">{stat.value}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{stat.sub}</p>
             </motion.div>
-          );
-        })}
+          ))}
         </div>
 
-        {/* Charts Section */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {/* Revenue Chart */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="bg-white p-6 rounded-2xl shadow-lg"
-          >
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Revenue Collection</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={property.revenueHistory}>
+        {/* Charts */}
+        <div className="grid lg:grid-cols-2 gap-5 mb-8">
+          <FadeCard delay={0.5} className="p-6">
+            <h3 className="font-semibold text-xl text-gray-900 mb-5">Revenue Collection</h3>
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={property.revenueHistory} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1B4332" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#1B4332" stopOpacity={0}/>
+                  <linearGradient id="collectedGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#1A3626" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#1A3626" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" stroke="#999" style={{ fontSize: '12px' }} />
-                <YAxis stroke="#999" style={{ fontSize: '12px' }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#fff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="collected"
-                  stroke="#1B4332"
-                  strokeWidth={3}
-                  fillOpacity={1}
-                  fill="url(#colorCollected)"
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
+                <XAxis dataKey="month" stroke="#d1d5db" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                <YAxis stroke="#d1d5db" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area type="monotone" dataKey="collected" name="Collected" stroke="#1A3626" strokeWidth={2.5} fill="url(#collectedGrad)" dot={false} activeDot={{ r: 5, fill: "#C9A843", stroke: "#fff", strokeWidth: 2 }} />
+                <Area type="monotone" dataKey="expected" name="Expected" stroke="#C9A843" strokeWidth={1.5} strokeDasharray="5 4" fill="none" dot={false} />
               </AreaChart>
             </ResponsiveContainer>
-          </motion.div>
+          </FadeCard>
 
-          {/* Expenses Breakdown */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="bg-white p-6 rounded-2xl shadow-lg"
-          >
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Recent Expenses</h3>
-            <div className="space-y-4">
+          <FadeCard delay={0.55} className="p-6">
+            <h3 className="font-semibold text-xl text-gray-900 mb-5">Recent Expenses</h3>
+            <div className="space-y-3">
               {property.expenses.slice(0, 5).map((expense, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{expense.description}</p>
-                    <p className="text-sm text-gray-600">{expense.category} • {format(expense.date, 'MMM dd, yyyy')}</p>
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{expense.description}</p>
+                    <p className="text-xs text-gray-400">{expense.category} · {format(expense.date, "MMM d, yyyy")}</p>
                   </div>
-                  <p className="text-lg font-bold text-red-600">-KES {expense.amount.toLocaleString()}</p>
+                  <p className="text-sm font-bold text-red-500 num">−KES {expense.amount.toLocaleString()}</p>
                 </div>
               ))}
             </div>
-          </motion.div>
+          </FadeCard>
         </div>
 
-        {/* Amenities Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="bg-white p-6 rounded-2xl shadow-lg mb-8"
-        >
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Amenities</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {/* Amenities */}
+        <FadeCard delay={0.6} className="p-6 mb-8">
+          <h3 className="font-semibold text-xl text-gray-900 mb-5">Amenities</h3>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
             {property.amenities.map((amenity, idx) => {
-              const Icon = amenityIcons[amenity.icon];
+              const Icon = amenityIcons[amenity.icon] || Shield;
               return (
                 <motion.div
                   key={idx}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  className="flex flex-col items-center p-4 bg-gradient-to-br from-primary-50 to-gold-50 rounded-xl cursor-pointer"
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  className="flex flex-col items-center p-4 bg-gradient-to-br from-primary-50 to-gold-50/50 rounded-xl cursor-default border border-primary-100/50"
                 >
-                  <div className="p-3 bg-white rounded-full mb-3 shadow-md">
-                    <Icon className="text-primary-600" size={24} />
+                  <div className="p-2.5 bg-white rounded-full mb-2 shadow-sm">
+                    <Icon className="text-primary-600" size={20} />
                   </div>
-                  <p className="text-sm font-semibold text-gray-900 text-center">{amenity.name}</p>
+                  <p className="text-xs font-semibold text-gray-700 text-center leading-tight">{amenity.name}</p>
                 </motion.div>
               );
             })}
           </div>
-        </motion.div>
+        </FadeCard>
 
         {/* Units Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="bg-white p-6 rounded-2xl shadow-lg mb-8"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Units Overview</h3>
-            <span className="px-4 py-2 bg-green-100 text-green-700 font-semibold rounded-lg">
+        <FadeCard delay={0.65} className="p-0 overflow-hidden mb-8">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <h3 className="font-semibold text-xl text-gray-900">Units Overview</h3>
+            <span className="px-3 py-1 bg-primary-50 text-primary-700 text-xs font-bold rounded-full border border-primary-100">
               {property.occupiedUnits}/{property.totalUnits} Occupied
             </span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b-2 border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Unit</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Floor</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Rent</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Tenant</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Lease Ends</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                <tr className="border-b border-gray-100 bg-gray-50/60">
+                  {["Unit", "Type", "Floor", "Rent", "Tenant", "Lease Ends", "Status"].map((h) => (
+                    <th key={h} className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase tracking-wide">{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-50">
                 {property.units.map((unit, idx) => (
                   <motion.tr
                     key={idx}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1 + idx * 0.05 }}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    transition={{ delay: 0.7 + idx * 0.03 }}
+                    className="hover:bg-gray-50/80 transition-colors"
                   >
-                    <td className="py-4 px-4">
-                      <p className="font-bold text-gray-900">{unit.id}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-gray-600">{unit.type}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-gray-600">Floor {unit.floor}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="font-semibold text-gray-900">KES {unit.rent.toLocaleString()}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-gray-600">{unit.tenant || '-'}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-gray-600">{unit.leaseEnd ? format(unit.leaseEnd, 'MMM dd, yyyy') : '-'}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        unit.status === 'occupied'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                      }`}>
-                        {unit.status}
-                      </span>
+                    <td className="py-3.5 px-4 font-bold text-gray-900 text-sm">{unit.id}</td>
+                    <td className="py-3.5 px-4 text-sm text-gray-600">{unit.type}</td>
+                    <td className="py-3.5 px-4 text-sm text-gray-600">F{unit.floor}</td>
+                    <td className="py-3.5 px-4 text-sm font-semibold text-gray-900 num">KES {unit.rent.toLocaleString()}</td>
+                    <td className="py-3.5 px-4 text-sm text-gray-600">{unit.tenant ?? <span className="text-gray-300 italic">Vacant</span>}</td>
+                    <td className="py-3.5 px-4 text-sm text-gray-500">{unit.leaseEnd ? format(unit.leaseEnd, "MMM d, yyyy") : "—"}</td>
+                    <td className="py-3.5 px-4">
+                      <StatusBadge status={unit.status as any} />
                     </td>
                   </motion.tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </FadeCard>
 
         {/* Maintenance History */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5 }}
-          className="bg-white p-6 rounded-2xl shadow-lg mb-8"
-        >
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Maintenance History</h3>
-          <div className="space-y-4">
-            {property.maintenanceHistory.map((maintenance, idx) => (
-              <div key={idx} className="flex items-start gap-4 p-5 bg-gradient-to-r from-gray-50 to-white rounded-xl border-2 border-gray-100 hover:border-primary-200 transition-all">
-                <div className={`p-3 rounded-lg ${
-                  maintenance.priority === 'high' ? 'bg-red-100' :
-                  maintenance.priority === 'medium' ? 'bg-yellow-100' :
-                  'bg-blue-100'
+        <FadeCard delay={0.7} className="p-6 mb-8">
+          <h3 className="font-semibold text-xl text-gray-900 mb-5">Maintenance History</h3>
+          <div className="space-y-3">
+            {property.maintenanceHistory.map((m, idx) => (
+              <div key={idx} className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-gold-200/60 transition-all">
+                <div className={`p-2.5 rounded-xl flex-shrink-0 ${
+                  m.priority === "high" ? "bg-red-50 text-red-600" :
+                  m.priority === "medium" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-blue-600"
                 }`}>
-                  <Wrench className={
-                    maintenance.priority === 'high' ? 'text-red-600' :
-                    maintenance.priority === 'medium' ? 'text-yellow-600' :
-                    'text-blue-600'
-                  } size={24} />
+                  <Wrench size={16} />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-bold text-gray-900">{maintenance.issue}</h4>
-                      <p className="text-sm text-gray-600">Unit {maintenance.unit} • {maintenance.tenant}</p>
+                      <p className="font-semibold text-gray-900 text-sm">{m.issue}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Unit {m.unit} · {m.tenant}</p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      maintenance.status === 'completed' ? 'bg-green-100 text-green-700' :
-                      maintenance.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {maintenance.status.replace('_', ' ').toUpperCase()}
-                    </span>
+                    <StatusBadge status={m.status as any} />
                   </div>
-                  <div className="flex items-center gap-6 text-sm text-gray-600">
-                    <span className="flex items-center gap-1">
-                      <Calendar size={14} />
-                      {format(maintenance.date, 'MMM dd, yyyy')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <DollarSign size={14} />
-                      KES {maintenance.cost.toLocaleString()}
-                    </span>
+                  <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                    <span className="flex items-center gap-1"><Calendar size={11} />{format(m.date, "MMM d, yyyy")}</span>
+                    <span className="flex items-center gap-1 font-semibold text-gray-600 num"><DollarSign size={11} />KES {m.cost.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </motion.div>
+        </FadeCard>
 
-        {/* Property Manager Contact */}
+        {/* Property Manager */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.6 }}
-          className="bg-gradient-to-br from-primary-600 to-primary-800 p-6 rounded-2xl shadow-lg text-white"
+          transition={{ delay: 0.75 }}
+          className="bg-gradient-to-r from-primary-950 to-primary-900 p-6 rounded-2xl shadow-lg text-white"
         >
-          <h3 className="text-xl font-bold mb-4">Property Manager</h3>
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gold-400 rounded-full flex items-center justify-center text-primary-950 font-bold text-2xl">
-              {property.manager.name.split(' ').map(n => n[0]).join('')}
+          <h3 className="font-semibold text-lg mb-4 text-gold-400">Property Manager</h3>
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 bg-gold-500 rounded-full flex items-center justify-center text-primary-950 font-bold text-xl flex-shrink-0">
+              {property.manager.name.split(" ").map((n) => n[0]).join("")}
             </div>
             <div className="flex-1">
-              <p className="text-xl font-bold">{property.manager.name}</p>
-              <div className="flex items-center gap-6 mt-2 text-primary-200">
-                <span className="flex items-center gap-2">
-                  <Phone size={16} />
-                  {property.manager.phone}
-                </span>
-                <span className="flex items-center gap-2">
-                  <Mail size={16} />
-                  {property.manager.email}
-                </span>
+              <p className="font-bold text-lg">{property.manager.name}</p>
+              <div className="flex flex-wrap gap-4 mt-1 text-primary-300 text-sm">
+                <span className="flex items-center gap-1.5"><Phone size={13} />{property.manager.phone}</span>
+                <span className="flex items-center gap-1.5"><Mail size={13} />{property.manager.email}</span>
               </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-3 bg-gold-500 hover:bg-gold-600 text-primary-950 font-bold rounded-xl transition-all"
+            <button
+              onClick={() => toast.success("Contact form coming soon!")}
+              className="px-5 py-2.5 bg-gold-500 hover:bg-gold-400 text-primary-950 font-bold rounded-xl transition-all text-sm"
             >
               Contact
-            </motion.button>
+            </button>
           </div>
         </motion.div>
       </div>

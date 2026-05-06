@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { Toaster } from "sonner";
+import CommandPalette from "@/components/CommandPalette";
+import { AuthProvider } from "@/context/auth-context";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -25,9 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn(jakarta.variable)}>
       <body className="antialiased" style={{ fontFamily: "var(--font-jakarta, system-ui, sans-serif)" }}>
-        <SmoothScroll>
-          {children}
-        </SmoothScroll>
+        <AuthProvider>
+          <SmoothScroll>
+            {children}
+          </SmoothScroll>
+        </AuthProvider>
+        <CommandPalette />
         <Toaster
           position="top-right"
           toastOptions={{
