@@ -163,18 +163,6 @@ export default function Login() {
               )}
             </motion.button>
 
-            {/* Demo credentials */}
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500 space-y-1">
-              <p className="font-semibold text-gray-700 mb-2">Demo credentials</p>
-              <p>
-                Landlord: <span className="font-mono">matty@zariva.com</span> /{" "}
-                <span className="font-mono">zariva123</span>
-              </p>
-              <p>
-                Tenant: <span className="font-mono">john.kamau@email.com</span> /{" "}
-                <span className="font-mono">tenant123</span>
-              </p>
-            </div>
           </form>
 
           <p className="mt-8 text-center text-gray-600">
