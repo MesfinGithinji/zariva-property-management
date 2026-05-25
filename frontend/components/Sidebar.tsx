@@ -14,7 +14,10 @@ import {
   FileText,
   ClipboardList,
   Shield,
+  type LucideIcon,
 } from "lucide-react";
+
+type NavLink = { href: string; icon: LucideIcon; label: string; badge?: number };
 
 interface SidebarProps {
   userType: "landlord" | "tenant";
@@ -29,7 +32,7 @@ export default function Sidebar({
   pendingMaintenance = 0,
   pendingRequests = 0,
 }: SidebarProps) {
-  const landlordLinks = [
+  const landlordLinks: NavLink[] = [
     { href: "/landlord", icon: BarChart3, label: "Dashboard" },
     { href: "/landlord/properties", icon: Building2, label: "Properties" },
     { href: "/landlord/tenants", icon: Users, label: "Tenants" },
@@ -38,7 +41,7 @@ export default function Sidebar({
     { href: "/landlord/requests", icon: ClipboardList, label: "Consent Requests", badge: pendingRequests },
   ];
 
-  const tenantLinks = [
+  const tenantLinks: NavLink[] = [
     { href: "/tenant", icon: Home, label: "Dashboard" },
     { href: "/tenant/payments", icon: CreditCard, label: "Payments" },
     { href: "/tenant/maintenance", icon: Wrench, label: "Maintenance" },
