@@ -139,3 +139,91 @@ export interface PaymentSummary {
   monthly_collected: number;
   month: string;
 }
+
+export interface ConsentOut {
+  id: number;
+  reference_number: string;
+  notice_version: string;
+  lease_admin_consent: boolean;
+  communications_consent: boolean;
+  marketing_consent: boolean;
+  national_id: string | null;
+  consented_at: string;
+  withdrawn_at: string | null;
+}
+
+export interface DataSubjectRequestOut {
+  id: number;
+  reference_number: string;
+  request_type: "access" | "rectification" | "erasure" | "portability" | "objection";
+  description: string | null;
+  status: string;
+  created_at: string;
+  resolved_at: string | null;
+  response: string | null;
+  requester_name: string | null;
+}
+
+export interface SubletRequestOut {
+  id: number;
+  reference_number: string;
+  tenant_id: number;
+  lease_id: number;
+  subtenant_name: string;
+  subtenant_id_no: string;
+  proposed_commencement: string;
+  proposed_duration: string;
+  monthly_rent_to_subtenant: number;
+  purpose: "full_sublet" | "room_only" | "full_assignment";
+  reason: string;
+  status: string;
+  decision_by: string | null;
+  decision_date: string | null;
+  additional_conditions: string | null;
+  decline_reason: string | null;
+  created_at: string;
+  tenant_name: string | null;
+}
+
+export interface AlterationRequestOut {
+  id: number;
+  reference_number: string;
+  tenant_id: number;
+  lease_id: number;
+  description_of_works: string;
+  contractor_name: string | null;
+  contractor_contact: string | null;
+  estimated_start_date: string | null;
+  estimated_duration: string | null;
+  estimated_cost: number | null;
+  status: string;
+  decision_by: string | null;
+  decision_date: string | null;
+  modification_conditions: string | null;
+  decline_reason: string | null;
+  created_at: string;
+  tenant_name: string | null;
+}
+
+export interface PetDetail {
+  id: number;
+  animal_type: string;
+  breed: string | null;
+  number: number;
+  vaccinated: boolean;
+}
+
+export interface PetConsentOut {
+  id: number;
+  reference_number: string;
+  tenant_id: number;
+  lease_id: number;
+  pets: PetDetail[];
+  additional_deposit: number | null;
+  status: string;
+  decision_by: string | null;
+  decision_date: string | null;
+  decline_reason: string | null;
+  created_at: string;
+  tenant_name: string | null;
+}

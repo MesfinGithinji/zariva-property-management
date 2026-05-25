@@ -12,6 +12,8 @@ import {
   Home,
   CreditCard,
   FileText,
+  ClipboardList,
+  Shield,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -33,13 +35,16 @@ export default function Sidebar({
     { href: "/landlord/tenants", icon: Users, label: "Tenants" },
     { href: "/landlord/maintenance", icon: Wrench, label: "Maintenance", badge: pendingMaintenance },
     { href: "/landlord/finance", icon: DollarSign, label: "Financials" },
+    { href: "/landlord/requests", icon: ClipboardList, label: "Consent Requests", badge: pendingRequests },
   ];
 
   const tenantLinks = [
     { href: "/tenant", icon: Home, label: "Dashboard" },
     { href: "/tenant/payments", icon: CreditCard, label: "Payments" },
-    { href: "/tenant/maintenance", icon: Wrench, label: "Maintenance", badge: pendingRequests },
+    { href: "/tenant/maintenance", icon: Wrench, label: "Maintenance" },
     { href: "/tenant/documents", icon: FileText, label: "Documents" },
+    { href: "/tenant/requests", icon: ClipboardList, label: "My Requests" },
+    { href: "/privacy", icon: Shield, label: "Privacy Notice" },
   ];
 
   const links = userType === "landlord" ? landlordLinks : tenantLinks;
