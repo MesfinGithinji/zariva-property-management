@@ -95,11 +95,11 @@ export default function TenantDashboard() {
         pendingRequests={activeMaintenance.length}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
               Welcome back, {user?.full_name?.split(" ")[0] ?? "there"}!
             </h1>
             <p className="text-gray-600">
@@ -116,7 +116,7 @@ export default function TenantDashboard() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 p-6 bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-xl shadow-lg"
+            className="mb-6 p-6 bg-linear-to-r from-red-50 to-red-100 border-l-4 border-red-500 rounded-xl shadow-lg"
           >
             <div className="flex items-start gap-4">
               <div className="p-3 bg-red-200 rounded-full">
@@ -157,7 +157,7 @@ export default function TenantDashboard() {
                 )}
               </div>
               <h3 className="text-white/80 text-sm font-medium mb-2">Monthly Rent</h3>
-              <p className="text-5xl font-bold text-white mb-6">
+              <p className="text-3xl md:text-5xl font-bold text-white mb-6">
                 KES {lease ? (lease.monthly_rent / 1000).toFixed(0) : "—"}K
               </p>
               <div className="flex items-center gap-2 text-sm text-white/70 mb-6">
@@ -168,7 +168,7 @@ export default function TenantDashboard() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => toast.info("M-Pesa integration coming in next phase!")}
-                className="w-full py-4 bg-gradient-to-r from-gold-400 to-gold-600 hover:from-gold-500 hover:to-gold-700 text-primary-950 font-bold rounded-xl shadow-xl transition-all"
+                className="w-full py-4 bg-linear-to-r from-gold-400 to-gold-600 hover:from-gold-500 hover:to-gold-700 text-primary-950 font-bold rounded-xl shadow-xl transition-all"
               >
                 Pay Rent via M-Pesa
               </motion.button>
@@ -215,7 +215,7 @@ export default function TenantDashboard() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowMaintenanceForm(true)}
-              className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 bg-linear-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
             >
               <Send size={20} />
               Submit New Request
@@ -279,7 +279,7 @@ export default function TenantDashboard() {
             <h3 className="text-xl font-bold text-gray-900 mb-6">Utilities</h3>
             <div className="space-y-4">
               {utilities.map((utility, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-100">
+                <div key={index} className="flex items-center gap-3 p-3 bg-linear-to-r from-gray-50 to-white rounded-lg border border-gray-100">
                   <div className={`p-2 rounded-lg ${
                     utility.type === "Water" ? "bg-blue-100" :
                     utility.type === "Electricity" ? "bg-yellow-100" : "bg-purple-100"
@@ -317,7 +317,8 @@ export default function TenantDashboard() {
             <h3 className="text-xl font-bold text-gray-900">Payment History</h3>
             <a href="/tenant/payments" className="text-primary-600 hover:text-primary-700 font-semibold text-sm">View All →</a>
           </div>
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -338,7 +339,7 @@ export default function TenantDashboard() {
                     <td className="py-4 px-4 font-mono text-sm text-gray-600">{payment.reference}</td>
                     <td className="py-4 px-4 text-gray-600">{format(new Date(payment.payment_date), "MMM dd, yyyy")}</td>
                     <td className="py-4 px-4 text-right">
-                      <button className="p-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-all">
+                      <button className="p-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-all min-h-11 min-w-11 flex items-center justify-center">
                         <Download size={16} />
                       </button>
                     </td>
@@ -351,6 +352,28 @@ export default function TenantDashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {payments.map((payment) => (
+              <div key={payment.id} className="border border-gray-100 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="font-semibold text-gray-900">{payment.month_for}</p>
+                  <span className="px-2.5 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                    <CheckCircle2 size={11} />Paid
+                  </span>
+                </div>
+                <p className="text-xl font-bold text-gray-900 num mb-1">KES {payment.amount.toLocaleString()}</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>{payment.method.replace("_", " ")} · {payment.reference}</span>
+                  <span>{format(new Date(payment.payment_date), "MMM dd, yyyy")}</span>
+                </div>
+              </div>
+            ))}
+            {payments.length === 0 && !loading && (
+              <p className="py-8 text-center text-gray-400 text-sm">No payment records found</p>
+            )}
           </div>
         </motion.div>
 
@@ -365,7 +388,7 @@ export default function TenantDashboard() {
             <h3 className="text-xl font-bold text-gray-900 mb-6">Active Maintenance Requests</h3>
             <div className="space-y-4">
               {activeMaintenance.map((request) => (
-                <div key={request.id} className="p-5 bg-gradient-to-r from-gray-50 to-white rounded-xl border-2 border-gray-100 hover:border-primary-200 transition-all">
+                <div key={request.id} className="p-5 bg-linear-to-r from-gray-50 to-white rounded-xl border-2 border-gray-100 hover:border-primary-200 transition-all">
                   <div className="flex items-start gap-4">
                     <div className={`p-3 rounded-lg ${
                       request.priority === "high" ? "bg-red-100" :
@@ -411,7 +434,7 @@ export default function TenantDashboard() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-100 flex items-center justify-center p-4"
           onClick={() => setShowMaintenanceForm(false)}
         >
           <motion.div

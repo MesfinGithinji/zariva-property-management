@@ -63,7 +63,7 @@ export default function FinancePage() {
         pendingMaintenance={overview.pendingMaintenance}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <motion.div
@@ -74,7 +74,7 @@ export default function FinancePage() {
             <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">
               Financial Overview
             </p>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight">
               <span className="text-gold-shimmer">Financials</span>
             </h1>
             <p className="text-gray-500 text-sm mt-1">
@@ -161,7 +161,8 @@ export default function FinancePage() {
                 <p className="text-xs text-gray-400 mt-0.5">Last 6 months · KES</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={260}>
+            <div className="w-full h-48 md:h-64">
+            <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={financeData.monthlyPnl} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
@@ -186,6 +187,7 @@ export default function FinancePage() {
                 <Area type="monotone" dataKey="net" name="Net Income" stroke="#10b981" strokeWidth={2} fill="url(#netGrad)" dot={false} activeDot={{ r: 4, fill: "#10b981", stroke: "#fff", strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
+            </div>
           </FadeCard>
 
           <FadeCard delay={0.55} className="lg:col-span-2 p-6">
@@ -193,7 +195,8 @@ export default function FinancePage() {
               <h3 className="font-semibold text-xl text-gray-900">Expense Breakdown</h3>
               <p className="text-xs text-gray-400 mt-0.5">By category this month</p>
             </div>
-            <ResponsiveContainer width="100%" height={160}>
+            <div className="w-full h-40 md:h-44">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={financeData.expenseCategories}
@@ -211,6 +214,7 @@ export default function FinancePage() {
                 <Tooltip content={<PieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
+            </div>
             <div className="mt-3 space-y-2">
               {financeData.expenseCategories.map((cat) => (
                 <div key={cat.category} className="flex items-center justify-between text-sm">

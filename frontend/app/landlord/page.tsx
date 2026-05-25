@@ -90,7 +90,7 @@ export default function LandlordDashboard() {
         pendingMaintenance={maintenanceStats?.pending ?? 0}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <motion.div
@@ -101,7 +101,7 @@ export default function LandlordDashboard() {
             <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">
               {format(new Date(), "EEEE, MMMM d")}
             </p>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight">
               Welcome back,{" "}
               <span className="text-gold-shimmer">
                 {user?.full_name?.split(" ")[0] ?? "Matty"}.
@@ -179,7 +179,8 @@ export default function LandlordDashboard() {
                 <p className="text-xs text-gray-400 mt-0.5">Last 6 months (collected)</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={260}>
+            <div className="w-full h-48 md:h-64">
+            <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={revenueData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
@@ -194,6 +195,7 @@ export default function LandlordDashboard() {
                 <Area type="monotone" dataKey="revenue" stroke="#1A3626" strokeWidth={2.5} fillOpacity={1} fill="url(#revenueGrad)" dot={false} activeDot={{ r: 5, fill: "#C9A843", stroke: "#fff", strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
+            </div>
           </FadeCard>
 
           <FadeCard delay={0.6} className="p-6">
@@ -201,7 +203,8 @@ export default function LandlordDashboard() {
               <h3 className="text-xl font-semibold text-gray-900">Property Performance</h3>
               <p className="text-xs text-gray-400 mt-0.5">Occupancy rate by property</p>
             </div>
-            <ResponsiveContainer width="100%" height={260}>
+            <div className="w-full h-48 md:h-64">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={properties.map((p) => ({ name: p.name.split(" ")[0], occupancyRate: p.occupancy_rate }))}
                 margin={{ top: 5, right: 5, left: 0, bottom: 30 }}
@@ -213,6 +216,7 @@ export default function LandlordDashboard() {
                 <Bar dataKey="occupancyRate" fill="#C9A843" radius={[6, 6, 0, 0]} maxBarSize={48} />
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </FadeCard>
         </div>
 

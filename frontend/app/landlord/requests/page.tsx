@@ -176,7 +176,7 @@ export default function LandlordRequestsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-[#F5F1E8]/40 to-gray-50">
       <Sidebar userType="landlord" currentPath="/landlord/requests" pendingRequests={tabs.reduce((s, t) => s + t.pending, 0)} />
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         <FadeCard delay={0}>
           <div className="mb-8">
             <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">Consent Management</p>

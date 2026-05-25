@@ -130,7 +130,7 @@ export default function TenantRequestsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-[#F5F1E8]/40 to-gray-50">
       <Sidebar userType="tenant" currentPath="/tenant/requests" />
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         <FadeCard delay={0}>
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -344,26 +344,43 @@ export default function TenantRequestsPage() {
                 sublets.length === 0 ? (
                   <EmptyState label="No sublet requests yet" icon={<Home size={32} className="text-gray-300" />} />
                 ) : (
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      <th className="text-left px-5 py-3">Reference</th>
-                      <th className="text-left px-5 py-3">Subtenant</th>
-                      <th className="text-left px-5 py-3">Purpose</th>
-                      <th className="text-left px-5 py-3">Status</th>
-                      <th className="text-left px-5 py-3">Submitted</th>
-                    </tr></thead>
-                    <tbody>
+                  <>
+                    <table className="hidden md:table w-full text-sm">
+                      <thead><tr className="border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <th className="text-left px-5 py-3">Reference</th>
+                        <th className="text-left px-5 py-3">Subtenant</th>
+                        <th className="text-left px-5 py-3">Purpose</th>
+                        <th className="text-left px-5 py-3">Status</th>
+                        <th className="text-left px-5 py-3">Submitted</th>
+                      </tr></thead>
+                      <tbody>
+                        {sublets.map((r) => (
+                          <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                            <td className="px-5 py-3 font-mono text-xs text-primary-700">{r.reference_number}</td>
+                            <td className="px-5 py-3 font-medium text-gray-900">{r.subtenant_name}</td>
+                            <td className="px-5 py-3 text-gray-600 capitalize">{r.purpose.replace("_", " ")}</td>
+                            <td className="px-5 py-3"><RequestStatusBadge status={r.status} /></td>
+                            <td className="px-5 py-3 text-gray-400 text-xs">{format(parseISO(r.created_at), "dd MMM yyyy")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="md:hidden divide-y divide-gray-100">
                       {sublets.map((r) => (
-                        <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-5 py-3 font-mono text-xs text-primary-700">{r.reference_number}</td>
-                          <td className="px-5 py-3 font-medium text-gray-900">{r.subtenant_name}</td>
-                          <td className="px-5 py-3 text-gray-600 capitalize">{r.purpose.replace("_", " ")}</td>
-                          <td className="px-5 py-3"><RequestStatusBadge status={r.status} /></td>
-                          <td className="px-5 py-3 text-gray-400 text-xs">{format(parseISO(r.created_at), "dd MMM yyyy")}</td>
-                        </tr>
+                        <div key={r.id} className="px-5 py-4">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-medium text-gray-900">{r.subtenant_name}</p>
+                            <RequestStatusBadge status={r.status} />
+                          </div>
+                          <p className="text-xs text-gray-500 capitalize mb-1">{r.purpose.replace("_", " ")}</p>
+                          <div className="flex items-center justify-between text-xs text-gray-400">
+                            <span className="font-mono text-primary-700">{r.reference_number}</span>
+                            <span>{format(parseISO(r.created_at), "dd MMM yyyy")}</span>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  </>
                 )
               )}
 
@@ -371,26 +388,45 @@ export default function TenantRequestsPage() {
                 alterations.length === 0 ? (
                   <EmptyState label="No alteration requests yet" icon={<Wrench size={32} className="text-gray-300" />} />
                 ) : (
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      <th className="text-left px-5 py-3">Reference</th>
-                      <th className="text-left px-5 py-3">Works Description</th>
-                      <th className="text-left px-5 py-3">Est. Cost</th>
-                      <th className="text-left px-5 py-3">Status</th>
-                      <th className="text-left px-5 py-3">Submitted</th>
-                    </tr></thead>
-                    <tbody>
+                  <>
+                    <table className="hidden md:table w-full text-sm">
+                      <thead><tr className="border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <th className="text-left px-5 py-3">Reference</th>
+                        <th className="text-left px-5 py-3">Works Description</th>
+                        <th className="text-left px-5 py-3">Est. Cost</th>
+                        <th className="text-left px-5 py-3">Status</th>
+                        <th className="text-left px-5 py-3">Submitted</th>
+                      </tr></thead>
+                      <tbody>
+                        {alterations.map((r) => (
+                          <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                            <td className="px-5 py-3 font-mono text-xs text-primary-700">{r.reference_number}</td>
+                            <td className="px-5 py-3 text-gray-900 max-w-xs truncate">{r.description_of_works}</td>
+                            <td className="px-5 py-3 text-gray-600 num">{r.estimated_cost ? `KES ${r.estimated_cost.toLocaleString()}` : "—"}</td>
+                            <td className="px-5 py-3"><RequestStatusBadge status={r.status} /></td>
+                            <td className="px-5 py-3 text-gray-400 text-xs">{format(parseISO(r.created_at), "dd MMM yyyy")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="md:hidden divide-y divide-gray-100">
                       {alterations.map((r) => (
-                        <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-5 py-3 font-mono text-xs text-primary-700">{r.reference_number}</td>
-                          <td className="px-5 py-3 text-gray-900 max-w-xs truncate">{r.description_of_works}</td>
-                          <td className="px-5 py-3 text-gray-600 num">{r.estimated_cost ? `KES ${r.estimated_cost.toLocaleString()}` : "—"}</td>
-                          <td className="px-5 py-3"><RequestStatusBadge status={r.status} /></td>
-                          <td className="px-5 py-3 text-gray-400 text-xs">{format(parseISO(r.created_at), "dd MMM yyyy")}</td>
-                        </tr>
+                        <div key={r.id} className="px-5 py-4">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-medium text-gray-900 text-sm line-clamp-2">{r.description_of_works}</p>
+                            <RequestStatusBadge status={r.status} />
+                          </div>
+                          {r.estimated_cost && (
+                            <p className="text-sm font-semibold text-gray-900 num mb-1">KES {r.estimated_cost.toLocaleString()}</p>
+                          )}
+                          <div className="flex items-center justify-between text-xs text-gray-400">
+                            <span className="font-mono text-primary-700">{r.reference_number}</span>
+                            <span>{format(parseISO(r.created_at), "dd MMM yyyy")}</span>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  </>
                 )
               )}
 
@@ -398,26 +434,43 @@ export default function TenantRequestsPage() {
                 pets.length === 0 ? (
                   <EmptyState label="No pet consent requests yet" icon={<PawPrint size={32} className="text-gray-300" />} />
                 ) : (
-                  <table className="w-full text-sm">
-                    <thead><tr className="border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      <th className="text-left px-5 py-3">Reference</th>
-                      <th className="text-left px-5 py-3">Pets</th>
-                      <th className="text-left px-5 py-3">Status</th>
-                      <th className="text-left px-5 py-3">Decision By</th>
-                      <th className="text-left px-5 py-3">Submitted</th>
-                    </tr></thead>
-                    <tbody>
+                  <>
+                    <table className="hidden md:table w-full text-sm">
+                      <thead><tr className="border-b border-gray-100 bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <th className="text-left px-5 py-3">Reference</th>
+                        <th className="text-left px-5 py-3">Pets</th>
+                        <th className="text-left px-5 py-3">Status</th>
+                        <th className="text-left px-5 py-3">Decision By</th>
+                        <th className="text-left px-5 py-3">Submitted</th>
+                      </tr></thead>
+                      <tbody>
+                        {pets.map((r) => (
+                          <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                            <td className="px-5 py-3 font-mono text-xs text-primary-700">{r.reference_number}</td>
+                            <td className="px-5 py-3 text-gray-900">{r.pets.map((p) => `${p.number}× ${p.animal_type}`).join(", ")}</td>
+                            <td className="px-5 py-3"><RequestStatusBadge status={r.status} /></td>
+                            <td className="px-5 py-3 text-gray-500 text-xs">{r.decision_by ?? "Pending"}</td>
+                            <td className="px-5 py-3 text-gray-400 text-xs">{format(parseISO(r.created_at), "dd MMM yyyy")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="md:hidden divide-y divide-gray-100">
                       {pets.map((r) => (
-                        <tr key={r.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-5 py-3 font-mono text-xs text-primary-700">{r.reference_number}</td>
-                          <td className="px-5 py-3 text-gray-900">{r.pets.map((p) => `${p.number}× ${p.animal_type}`).join(", ")}</td>
-                          <td className="px-5 py-3"><RequestStatusBadge status={r.status} /></td>
-                          <td className="px-5 py-3 text-gray-500 text-xs">{r.decision_by ?? "Pending"}</td>
-                          <td className="px-5 py-3 text-gray-400 text-xs">{format(parseISO(r.created_at), "dd MMM yyyy")}</td>
-                        </tr>
+                        <div key={r.id} className="px-5 py-4">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-medium text-gray-900">{r.pets.map((p) => `${p.number}× ${p.animal_type}`).join(", ")}</p>
+                            <RequestStatusBadge status={r.status} />
+                          </div>
+                          <p className="text-xs text-gray-500 mb-1">Decision by: {r.decision_by ?? "Pending"}</p>
+                          <div className="flex items-center justify-between text-xs text-gray-400">
+                            <span className="font-mono text-primary-700">{r.reference_number}</span>
+                            <span>{format(parseISO(r.created_at), "dd MMM yyyy")}</span>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  </>
                 )
               )}
             </div>

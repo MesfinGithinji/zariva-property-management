@@ -62,7 +62,7 @@ export default function TenantsPage() {
         pendingMaintenance={maintenanceStats?.pending ?? 0}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <motion.div
@@ -73,7 +73,7 @@ export default function TenantsPage() {
             <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">
               Tenant Management
             </p>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight">
               Your <span className="text-gold-shimmer">Tenants</span>
             </h1>
             <p className="text-gray-500 text-sm mt-1">

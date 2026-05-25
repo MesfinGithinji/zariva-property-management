@@ -96,7 +96,7 @@ export default function TenantMaintenancePage() {
         pendingRequests={pendingCount + inProgressCount}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <motion.div
@@ -105,7 +105,7 @@ export default function TenantMaintenancePage() {
             transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">Maintenance</p>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight">
               Your <span className="text-gold-shimmer">Requests</span>
             </h1>
             {lease && (

@@ -83,19 +83,19 @@ export default function Home() {
         {/* Aurora Background */}
         <div className="absolute inset-0 bg-[#0D2818]">
           <motion.div
-            className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-30"
+            className="absolute top-[-20%] right-[-10%] w-[min(600px,80vw)] h-[min(600px,80vw)] rounded-full opacity-30"
             style={{ background: "radial-gradient(circle, #C9A843 0%, transparent 70%)" }}
             animate={{ scale: [1, 1.15, 1], x: [0, 30, 0], y: [0, -20, 0] }}
             transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-20"
+            className="absolute bottom-[-10%] left-[-10%] w-[min(500px,70vw)] h-[min(500px,70vw)] rounded-full opacity-20"
             style={{ background: "radial-gradient(circle, #2D6040 0%, transparent 70%)" }}
             animate={{ scale: [1, 1.2, 1], x: [0, -20, 0], y: [0, 30, 0] }}
             transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           />
           <motion.div
-            className="absolute top-[40%] left-[30%] w-[400px] h-[400px] rounded-full opacity-15"
+            className="absolute top-[40%] left-[30%] w-[min(400px,60vw)] h-[min(400px,60vw)] rounded-full opacity-15"
             style={{ background: "radial-gradient(circle, #C9A843 0%, transparent 70%)" }}
             animate={{ scale: [1, 1.3, 1], rotate: [0, 45, 0] }}
             transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 4 }}
@@ -107,7 +107,7 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
             {/* Left */}
             <div className="space-y-8">
@@ -335,7 +335,7 @@ export default function Home() {
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gold-500/8 blur-3xl" />
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
