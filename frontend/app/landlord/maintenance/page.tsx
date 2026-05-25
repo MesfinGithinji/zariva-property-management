@@ -94,7 +94,7 @@ export default function MaintenancePage() {
         pendingMaintenance={stats?.pending ?? 0}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,7 +102,7 @@ export default function MaintenancePage() {
           className="mb-8"
         >
           <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">Operations</p>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight">
             <span className="text-gold-shimmer">Maintenance</span>
           </h1>
           <p className="text-gray-500 text-sm mt-1">Track and manage all requests across your properties</p>

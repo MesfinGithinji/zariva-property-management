@@ -24,14 +24,14 @@ export default function PaymentsPage() {
         pendingRequests={maintenanceRequests.filter(r => r.status !== 'completed').length}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Payments</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">Payments</h1>
           <p className="text-lg text-gray-600">
             Manage your rent payments and view payment history
           </p>
@@ -188,7 +188,9 @@ export default function PaymentsPage() {
           className="bg-white p-6 rounded-2xl shadow-lg"
         >
           <h2 className="text-xl font-bold text-gray-900 mb-6">Payment History</h2>
-          <div className="overflow-x-auto">
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b-2 border-gray-200">
@@ -210,33 +212,19 @@ export default function PaymentsPage() {
                     transition={{ delay: 0.6 + index * 0.05 }}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                   >
-                    <td className="py-4 px-4">
-                      <p className="font-semibold text-gray-900">{payment.month}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="font-bold text-gray-900">KES {payment.amount.toLocaleString()}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-gray-600">{payment.method}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="font-mono text-sm text-gray-600">{payment.reference}</p>
-                    </td>
-                    <td className="py-4 px-4">
-                      <p className="text-gray-600">{format(payment.paymentDate, "MMM dd, yyyy")}</p>
-                    </td>
+                    <td className="py-4 px-4"><p className="font-semibold text-gray-900">{payment.month}</p></td>
+                    <td className="py-4 px-4"><p className="font-bold text-gray-900 num">KES {payment.amount.toLocaleString()}</p></td>
+                    <td className="py-4 px-4"><p className="text-gray-600">{payment.method}</p></td>
+                    <td className="py-4 px-4"><p className="font-mono text-sm text-gray-600">{payment.reference}</p></td>
+                    <td className="py-4 px-4"><p className="text-gray-600">{format(payment.paymentDate, "MMM dd, yyyy")}</p></td>
                     <td className="py-4 px-4">
                       <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1 w-fit">
-                        <CheckCircle2 size={12} />
-                        {payment.status}
+                        <CheckCircle2 size={12} />{payment.status}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        className="p-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-all"
-                      >
+                      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                        className="p-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-all min-h-11 min-w-11 flex items-center justify-center">
                         <Download size={16} />
                       </motion.button>
                     </td>
@@ -244,6 +232,31 @@ export default function PaymentsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden space-y-3">
+            {paymentHistory.map((payment, index) => (
+              <motion.div
+                key={payment.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + index * 0.05 }}
+                className="border border-gray-100 rounded-xl p-4"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <p className="font-semibold text-gray-900">{payment.month}</p>
+                  <span className="px-2.5 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                    <CheckCircle2 size={11} />{payment.status}
+                  </span>
+                </div>
+                <p className="text-xl font-bold text-gray-900 num mb-1">KES {payment.amount.toLocaleString()}</p>
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>{payment.method} · {payment.reference}</span>
+                  <span>{format(payment.paymentDate, "MMM dd, yyyy")}</span>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
       </div>

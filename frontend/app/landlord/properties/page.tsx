@@ -66,7 +66,7 @@ export default function PropertiesPage() {
         pendingMaintenance={maintenanceStats?.pending ?? 0}
       />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <motion.div
@@ -75,7 +75,7 @@ export default function PropertiesPage() {
             transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">Portfolio</p>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight">
               My <span className="text-gold-shimmer">Properties</span>
             </h1>
             <p className="text-gray-500 text-sm mt-1">Manage and monitor all your properties</p>

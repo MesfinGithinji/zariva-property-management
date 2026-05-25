@@ -63,7 +63,7 @@ export default function ConsentModal({ onConsented }: ConsentModalProps) {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[95vh] md:max-h-[90vh] md:h-auto flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-primary-950 to-primary-900 px-8 py-6 flex-shrink-0">

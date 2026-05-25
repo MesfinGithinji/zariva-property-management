@@ -104,7 +104,7 @@ export default function CommandPalette() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: -8 }}
               transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="fixed top-[15vh] left-1/2 -translate-x-1/2 w-full max-w-xl z-[101]"
+              className="fixed top-[10vh] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-xl z-[101]"
             >
               <Command
                 className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"

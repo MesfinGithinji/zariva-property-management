@@ -62,7 +62,7 @@ export default function PropertyDetail() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-[#F5F1E8]/40 to-gray-50">
       <Sidebar userType="landlord" currentPath="/landlord/properties" />
 
-      <div className="ml-72 p-8">
+      <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Back */}
         <motion.a
           href="/landlord/properties"
@@ -83,7 +83,7 @@ export default function PropertyDetail() {
         >
           <div>
             <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">{property.type}</p>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight mb-1">{property.name}</h1>
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight mb-1">{property.name}</h1>
             <p className="text-gray-500 flex items-center gap-1.5 text-sm">
               <MapPin size={14} className="text-primary-500" />{property.address}
             </p>
@@ -116,7 +116,7 @@ export default function PropertyDetail() {
             <div ref={emblaRef} className="overflow-hidden">
               <div className="flex">
                 {property.images.map((img, idx) => (
-                  <div key={idx} className="relative flex-[0_0_100%] h-[420px]">
+                  <div key={idx} className="relative flex-[0_0_100%] h-56 md:h-80 lg:h-[420px]">
                     <img
                       src={img}
                       alt={`${property.name} — image ${idx + 1}`}
@@ -210,7 +210,8 @@ export default function PropertyDetail() {
         <div className="grid lg:grid-cols-2 gap-5 mb-8">
           <FadeCard delay={0.5} className="p-6">
             <h3 className="font-semibold text-xl text-gray-900 mb-5">Revenue Collection</h3>
-            <ResponsiveContainer width="100%" height={260}>
+            <div className="w-full h-48 md:h-64">
+            <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={property.revenueHistory} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="collectedGrad" x1="0" y1="0" x2="0" y2="1">
@@ -226,6 +227,7 @@ export default function PropertyDetail() {
                 <Area type="monotone" dataKey="expected" name="Expected" stroke="#C9A843" strokeWidth={1.5} strokeDasharray="5 4" fill="none" dot={false} />
               </AreaChart>
             </ResponsiveContainer>
+            </div>
           </FadeCard>
 
           <FadeCard delay={0.55} className="p-6">
@@ -274,7 +276,8 @@ export default function PropertyDetail() {
               {property.occupiedUnits}/{property.totalUnits} Occupied
             </span>
           </div>
-          <div className="overflow-x-auto">
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
@@ -305,6 +308,26 @@ export default function PropertyDetail() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-gray-100">
+            {property.units.map((unit, idx) => (
+              <div key={idx} className="px-4 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-bold text-gray-900 text-sm">{unit.id}</span>
+                    <span className="text-xs text-gray-400">{unit.type} · F{unit.floor}</span>
+                  </div>
+                  <p className="text-sm font-semibold text-gray-900 num">KES {unit.rent.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 truncate">{unit.tenant ?? <span className="italic text-gray-300">Vacant</span>}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <StatusBadge status={unit.status as any} />
+                  {unit.leaseEnd && <span className="text-xs text-gray-400">{format(unit.leaseEnd, "MMM d, yyyy")}</span>}
+                </div>
+              </div>
+            ))}
           </div>
         </FadeCard>
 
