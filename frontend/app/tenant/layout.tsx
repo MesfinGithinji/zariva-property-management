@@ -1,17 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
+import { api, type ConsentOut } from "@/lib/api";
+import ConsentModal from "@/components/ConsentModal";
 
 export default function TenantLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [hasConsent, setHasConsent] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
+      return;
     }
+    if (loading || !user) return;
+
+    api.get<ConsentOut>("/consent/me")
+      .then((record) => setHasConsent(!!record && !record.withdrawn_at))
+      .catch(() => setHasConsent(false))
+      .finally(() => setConsentChecked(true));
   }, [user, loading, router]);
 
   if (loading) {
@@ -24,5 +35,12 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
 
   if (!user) return null;
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {consentChecked && !hasConsent && (
+        <ConsentModal onConsented={() => setHasConsent(true)} />
+      )}
+    </>
+  );
 }
