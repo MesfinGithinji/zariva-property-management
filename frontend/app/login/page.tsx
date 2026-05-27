@@ -66,7 +66,7 @@ export default function Login() {
           transition={{ duration: 0.5 }}
           className="relative z-10"
         >
-          <img src="/logo_transparent.png" alt="Zariva Africa Properties" className="h-20 w-auto object-contain" />
+          <img src="/logo_transparent.png" alt="Zariva Africa Properties" className="h-28 w-auto object-contain max-w-55" />
         </motion.a>
 
         {/* Headline + bullets */}
