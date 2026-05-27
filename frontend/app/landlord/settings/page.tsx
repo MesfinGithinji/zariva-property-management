@@ -61,13 +61,13 @@ export default function LandlordSettingsPage() {
           <p className="text-gray-500 text-sm mt-1">Manage your account preferences and profile</p>
         </motion.div>
 
-        <div className="flex gap-8">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8">
           {/* Sidebar tabs */}
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="w-52 flex-shrink-0"
+            className="w-full md:w-52 shrink-0"
           >
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               {tabs.map((tab) => {

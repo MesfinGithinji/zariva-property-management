@@ -1,10 +1,10 @@
 "use client";
 
-import { motion, useScroll, useSpring } from "framer-motion";
+import { motion, useScroll, useSpring, AnimatePresence } from "framer-motion";
 import {
   Building2, Users, TrendingUp, Wrench, CreditCard,
   BarChart3, Shield, Smartphone, ChevronRight,
-  CheckCircle2, Zap, Clock, Award, ArrowUpRight,
+  CheckCircle2, Zap, Clock, Award, ArrowUpRight, Menu, X,
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { useInView } from "react-intersection-observer";
@@ -13,13 +13,14 @@ import CountUp from "react-countup";
 export default function Home() {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
 
       {/* Scroll Progress */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-600 via-gold-500 to-primary-600 origin-left z-[100]"
+        className="fixed top-0 left-0 right-0 h-[2px] bg-linear-to-r from-primary-600 via-gold-500 to-primary-600 origin-left z-100"
         style={{ scaleX }}
       />
 
@@ -46,7 +47,7 @@ export default function Home() {
               />
             </motion.a>
 
-            {/* Right — all nav links + CTA */}
+            {/* Right — desktop nav links + CTA */}
             <div className="hidden md:flex items-center gap-10">
               {["Features", "Benefits", "Contact"].map((item) => (
                 <a
@@ -70,12 +71,105 @@ export default function Home() {
               </motion.a>
             </div>
 
+            {/* Mobile hamburger */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="md:hidden min-w-11 min-h-11 flex items-center justify-center rounded-xl text-gold-300 hover:bg-white/8 transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu size={24} />
+            </button>
+
           </div>
         </div>
 
         {/* Subtle gold line under nav */}
-        <div className="h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
+        <div className="h-px bg-linear-to-r from-transparent via-gold-500/20 to-transparent" />
       </motion.nav>
+
+      {/* ── Mobile Nav Drawer ─────────────────────────────────────── */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+            />
+            {/* Drawer — slides in from top */}
+            <motion.div
+              key="mobile-drawer"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 36 }}
+              className="md:hidden fixed top-0 left-0 right-0 bg-[#0D2818] border-b border-gold-500/20 z-60 pb-6"
+            >
+              {/* Close + logo row */}
+              <div className="flex items-center justify-between px-6 pt-4 pb-2">
+                <img src="/logo_transparent.png" alt="Zariva" className="h-20 w-auto object-contain" />
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="min-w-11 min-h-11 flex items-center justify-center rounded-xl text-gold-300 hover:bg-white/8 transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              {/* Nav links */}
+              <nav className="px-6 space-y-1">
+                {["Features", "Benefits", "Contact"].map((item, i) => (
+                  <motion.a
+                    key={item}
+                    href={`#${item.toLowerCase()}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + i * 0.05 }}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl text-gold-200/80 hover:text-gold-300 hover:bg-white/6 font-semibold text-sm transition-all"
+                  >
+                    <ChevronRight size={14} className="text-gold-500/50" />
+                    {item}
+                  </motion.a>
+                ))}
+              </nav>
+
+              {/* Divider */}
+              <div className="mx-6 my-4 h-px bg-white/8" />
+
+              {/* Auth CTAs */}
+              <div className="px-6 space-y-2">
+                <motion.a
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-semibold text-gold-300/80 hover:text-gold-200 hover:bg-white/6 border border-white/10 transition-all"
+                >
+                  Sign In
+                </motion.a>
+                <motion.a
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="flex items-center justify-center w-full py-3 rounded-xl text-sm font-bold bg-gold-500 hover:bg-gold-400 text-primary-950 transition-all"
+                >
+                  Get Started
+                </motion.a>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex items-center pt-28 overflow-hidden">
@@ -228,7 +322,7 @@ export default function Home() {
                   <p className="text-3xl font-bold text-white num">KES 2.45M</p>
                   <div className="mt-3 h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-gold-500 to-gold-400 rounded-full"
+                      className="h-full bg-linear-to-r from-gold-500 to-gold-400 rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: "78%" }}
                       transition={{ delay: 0.8, duration: 1.2, ease: "easeOut" }}
@@ -267,7 +361,7 @@ export default function Home() {
                   </div>
                   <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-primary-500 to-gold-500 rounded-full"
+                      className="h-full bg-linear-to-r from-primary-500 to-gold-500 rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: "87.5%" }}
                       transition={{ delay: 1.1, duration: 1.4, ease: "easeOut" }}
@@ -368,7 +462,7 @@ export default function Home() {
                     transition={{ delay: index * 0.1 }}
                     className="flex items-start gap-3 group"
                   >
-                    <div className="w-6 h-6 rounded-full bg-gold-500/15 border border-gold-500/30 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-gold-500/25 transition-colors">
+                    <div className="w-6 h-6 rounded-full bg-gold-500/15 border border-gold-500/30 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-gold-500/25 transition-colors">
                       <CheckCircle2 size={14} className="text-gold-400" />
                     </div>
                     <p className="text-white/70 group-hover:text-white/90 transition-colors">{benefit.text}</p>
@@ -472,12 +566,12 @@ export default function Home() {
               <h3 className="text-sm font-bold mb-5 text-gold-400 uppercase tracking-widest">Contact</h3>
               <ul className="space-y-4 text-sm text-white/50">
                 <li className="flex items-start gap-2.5">
-                  <Building2 size={16} className="text-gold-500 flex-shrink-0 mt-0.5" />
+                  <Building2 size={16} className="text-gold-500 shrink-0 mt-0.5" />
                   <span>P.O. Box 15842<br />Nairobi, Kenya</span>
                 </li>
                 <li>
                   <a href="mailto:info@zariafrica.com" className="flex items-center gap-2.5 hover:text-gold-400 transition-colors">
-                    <svg className="w-4 h-4 text-gold-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gold-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     info@zariafrica.com
@@ -485,7 +579,7 @@ export default function Home() {
                 </li>
                 <li>
                   <a href="tel:+254708688507" className="flex items-center gap-2.5 hover:text-gold-400 transition-colors">
-                    <svg className="w-4 h-4 text-gold-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gold-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                     +254 708 688 507
@@ -505,7 +599,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="h-[2px] bg-gradient-to-r from-transparent via-gold-500/50 to-transparent" />
+        <div className="h-[2px] bg-linear-to-r from-transparent via-gold-500/50 to-transparent" />
       </footer>
     </div>
   );
@@ -595,7 +689,7 @@ function StatsCard() {
 
         <div className="bg-white/6 rounded-xl p-4 border border-gold-500/15">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gold-500/20 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gold-500/20 flex items-center justify-center shrink-0">
               <Award size={16} className="text-gold-400" />
             </div>
             <p className="text-white/60 text-sm">

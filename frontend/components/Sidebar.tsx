@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { clearAuth } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 
 type NavLink = { href: string; icon: LucideIcon; label: string; badge?: number };
 
@@ -39,6 +40,7 @@ function SidebarContent({
   onNavClick,
 }: SidebarProps & { onNavClick?: () => void }) {
   const router = useRouter();
+  const { user } = useAuth();
 
   const landlordLinks: NavLink[] = [
     { href: "/landlord", icon: BarChart3, label: "Dashboard" },
@@ -123,8 +125,29 @@ function SidebarContent({
         })}
       </nav>
 
+      {/* User Profile */}
+      {user && (
+        <div className="shrink-0 px-2 py-3 mb-1 border-t border-primary-800/50">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-9 h-9 rounded-full bg-gold-500/20 border border-gold-500/30 flex items-center justify-center shrink-0 overflow-hidden">
+              {user.profile_image ? (
+                <img src={user.profile_image} alt={user.full_name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-gold-400 text-xs font-bold">
+                  {user.full_name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{user.full_name}</p>
+              <p className="text-[10px] tracking-widest text-primary-400 font-medium">{user.role === "landlord" ? "Landlord" : "Tenant"}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Actions */}
-      <div className="space-y-1 shrink-0 pt-4 border-t border-primary-800/50">
+      <div className="space-y-1 shrink-0 pt-2 border-t border-primary-800/50">
         <button
           onClick={() => handleNav(settingsHref)}
           className="relative flex items-center w-full rounded-xl py-3 px-4 group min-h-11 text-left"

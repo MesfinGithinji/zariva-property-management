@@ -21,19 +21,22 @@ interface StatCardProps {
 
 const variants = {
   green: {
-    icon: "bg-primary-950/10 text-primary-700",
-    trend: "text-primary-600",
-    border: "border-primary-100",
+    card: "bg-linear-to-br from-primary-50/70 to-white border-primary-200",
+    icon: "bg-primary-100 text-primary-700",
+    accent: "bg-primary-600",
+    trend: "text-primary-700 bg-primary-100",
   },
   gold: {
-    icon: "bg-gold-500/10 text-gold-600",
-    trend: "text-gold-600",
-    border: "border-gold-100",
+    card: "bg-linear-to-br from-gold-50/70 to-white border-gold-200",
+    icon: "bg-gold-100 text-gold-700",
+    accent: "bg-gold-500",
+    trend: "text-gold-700 bg-gold-100",
   },
   neutral: {
+    card: "bg-white border-gray-200",
     icon: "bg-gray-100 text-gray-600",
-    trend: "text-gray-500",
-    border: "border-gray-100",
+    accent: "bg-gray-300",
+    trend: "text-gray-600 bg-gray-100",
   },
 };
 
@@ -59,17 +62,20 @@ export function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={cn(
-        "bg-white rounded-2xl p-6 shadow-sm border hover:shadow-md transition-shadow duration-300",
-        v.border,
+        "relative bg-white rounded-2xl p-6 shadow-sm border hover:shadow-md transition-all duration-300 overflow-hidden",
+        v.card,
         className
       )}
     >
+      {/* Left accent bar */}
+      <div className={cn("absolute left-0 top-4 bottom-4 w-1 rounded-r-full", v.accent)} />
+
       <div className="flex items-start justify-between mb-4">
         <div className={cn("p-3 rounded-xl", v.icon)}>
           <Icon size={22} />
         </div>
         {trend && (
-          <span className={cn("text-xs font-semibold px-2 py-1 rounded-full bg-gray-50", v.trend)}>
+          <span className={cn("text-xs font-semibold px-2 py-1 rounded-full", v.trend)}>
             {trend.value > 0 ? "+" : ""}{trend.value}% {trend.label}
           </span>
         )}
