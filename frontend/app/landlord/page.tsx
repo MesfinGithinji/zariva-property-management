@@ -1,16 +1,17 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Building2, Users, Wrench, DollarSign, Bell, Plus, Clock, MapPin } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Building2, Users, Wrench, DollarSign, Bell, Plus, Clock, MapPin, Home, UserPlus, CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar,
 } from "recharts";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { api, type PropertyOut, type MaintenanceStats, type PaymentOut, type TenantDetail } from "@/lib/api";
+import { api, type PropertyOut, type MaintenanceStats, type PaymentOut, type TenantDetail, type JoinRequestOut } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import Sidebar from "@/components/Sidebar";
+import AddPropertyModal from "@/components/AddPropertyModal";
 import { StatCard } from "@/components/ui/stat-card";
 import { FadeCard } from "@/components/ui/fade-card";
 import { toast } from "sonner";
@@ -59,28 +60,130 @@ export default function LandlordDashboard() {
   const [recentPayments, setRecentPayments] = useState<PaymentOut[]>([]);
   const [tenants, setTenants] = useState<TenantDetail[]>([]);
   const [allPayments, setAllPayments] = useState<PaymentOut[]>([]);
+  const [joinRequests, setJoinRequests] = useState<JoinRequestOut[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddProperty, setShowAddProperty] = useState(false);
 
-  useEffect(() => {
+  function loadDashboard() {
+    setLoading(true);
     Promise.all([
       api.get<PropertyOut[]>("/properties"),
       api.get<MaintenanceStats>("/maintenance/stats"),
       api.get<PaymentOut[]>("/payments?limit=200"),
       api.get<TenantDetail[]>("/tenants"),
+      api.get<JoinRequestOut[]>("/join-requests").catch(() => [] as JoinRequestOut[]),
     ])
-      .then(([props, stats, payments, tens]) => {
+      .then(([props, stats, payments, tens, joins]) => {
         setProperties(props);
         setMaintenanceStats(stats);
         setAllPayments(payments);
         setRecentPayments(payments.slice(0, 5));
         setTenants(tens);
+        setJoinRequests(joins);
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const monthlyRevenue = properties.reduce((s, p) => s + p.monthly_income, 0);
   const revenueData = buildRevenueChart(allPayments);
+  const firstName = user?.full_name?.split(" ")[0] ?? "there";
+
+  // First-run setup progress (derived from real data)
+  const hasProperty = properties.length > 0;
+  const hasUnits = properties.some((p) => p.total_units > 0);
+  const hasTenant = tenants.length > 0 || joinRequests.some((r) => r.status === "approved");
+  const pendingJoins = joinRequests.filter((r) => r.status === "pending").length;
+
+  // Fresh landlord with no properties yet → show the getting-started experience.
+  if (!loading && !hasProperty) {
+    const steps = [
+      { done: hasProperty, label: "Add your first property", desc: "Create a property and its units." },
+      { done: hasUnits, label: "Add units", desc: "Units are what tenants rent and join." },
+      { done: hasTenant, label: "Approve a tenant", desc: "Tenants request to join; you approve to create their lease." },
+    ];
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-[#F5F1E8]/40 to-gray-50">
+        <Sidebar userType="landlord" currentPath="/landlord" pendingMaintenance={0} />
+        <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
+          <div className="max-w-2xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="relative overflow-hidden rounded-3xl bg-[#0D2818] p-8 md:p-10 mb-6"
+            >
+              <div
+                className="absolute top-[-30%] right-[-10%] w-72 h-72 rounded-full opacity-20 pointer-events-none"
+                style={{ background: "radial-gradient(circle, #C9A843 0%, transparent 70%)" }}
+              />
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-gold-500/15 border border-gold-500/25 rounded-full mb-4">
+                  <Sparkles size={13} className="text-gold-400" />
+                  <span className="text-gold-400 text-xs font-semibold">Getting started</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-extrabold text-white leading-tight mb-3">
+                  Welcome to Zariva,{" "}
+                  <span className="text-gold-shimmer">{firstName}.</span>
+                </h1>
+                <p className="text-white/60 text-sm md:text-base max-w-md mb-6">
+                  Let's set up your portfolio. Add your first property and its units — then tenants can find it and request to join.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowAddProperty(true)}
+                  className="inline-flex items-center gap-2 px-6 py-3.5 bg-gold-500 hover:bg-gold-400 text-primary-950 font-bold rounded-xl shadow-xl transition-all text-sm"
+                >
+                  <Plus size={18} /> Add your first property
+                </motion.button>
+              </div>
+            </motion.div>
+
+            {/* Setup checklist */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
+            >
+              <h3 className="text-sm font-bold text-gray-900 mb-4">Your setup checklist</h3>
+              <div className="space-y-3">
+                {steps.map((s, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${s.done ? "bg-primary-950" : "bg-gray-100 border-2 border-gray-200"}`}>
+                      {s.done ? <CheckCircle2 size={14} className="text-gold-400" /> : <span className="text-xs font-bold text-gray-400">{i + 1}</span>}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-semibold ${s.done ? "text-gray-400 line-through" : "text-gray-900"}`}>{s.label}</p>
+                      <p className="text-xs text-gray-500">{s.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {showAddProperty && (
+            <AddPropertyModal
+              onClose={() => setShowAddProperty(false)}
+              onCreated={() => {
+                setShowAddProperty(false);
+                loadDashboard();
+              }}
+            />
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-[#F5F1E8]/40 to-gray-50">
@@ -104,7 +207,7 @@ export default function LandlordDashboard() {
             <h1 className="text-2xl md:text-4xl font-bold text-gray-900 tracking-tight">
               Welcome back,{" "}
               <span className="text-gold-shimmer">
-                {user?.full_name?.split(" ")[0] ?? "Matty"}.
+                {firstName}.
               </span>
             </h1>
             <p className="text-gray-500 text-sm mt-1">Here's what's happening with your properties today.</p>
@@ -126,7 +229,7 @@ export default function LandlordDashboard() {
               transition={{ delay: 0.25 }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => toast.success("Property form coming soon!")}
+              onClick={() => setShowAddProperty(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl shadow-lg transition-all text-sm border border-gold-500/20"
             >
               <Plus size={18} />
@@ -300,6 +403,18 @@ export default function LandlordDashboard() {
           </FadeCard>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showAddProperty && (
+          <AddPropertyModal
+            onClose={() => setShowAddProperty(false)}
+            onCreated={() => {
+              setShowAddProperty(false);
+              loadDashboard();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

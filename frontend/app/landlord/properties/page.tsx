@@ -5,6 +5,7 @@ import { Building2, MapPin, TrendingUp, Search, Plus, Eye, SlidersHorizontal, X 
 import { useState, useMemo, useEffect } from "react";
 import { api, type PropertyOut, type MaintenanceStats } from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
+import AddPropertyModal from "@/components/AddPropertyModal";
 import { StatCard } from "@/components/ui/stat-card";
 import { toast } from "sonner";
 
@@ -18,8 +19,10 @@ export default function PropertiesPage() {
   const [search, setSearch] = useState("");
   const [activeType, setActiveType] = useState("All");
   const [activeStatus, setActiveStatus] = useState("All");
+  const [showAddProperty, setShowAddProperty] = useState(false);
 
-  useEffect(() => {
+  function load() {
+    setLoading(true);
     Promise.all([
       api.get<PropertyOut[]>("/properties"),
       api.get<MaintenanceStats>("/maintenance/stats"),
@@ -30,6 +33,11 @@ export default function PropertiesPage() {
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filtered = useMemo(() => {
@@ -87,7 +95,7 @@ export default function PropertiesPage() {
             transition={{ delay: 0.2 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => toast.success("Add property form coming soon!")}
+            onClick={() => setShowAddProperty(true)}
             className="flex items-center gap-2 px-5 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl shadow-lg transition-all text-sm border border-gold-500/20"
           >
             <Plus size={18} />
@@ -280,6 +288,18 @@ export default function PropertiesPage() {
           )}
         </AnimatePresence>
       </div>
+
+      <AnimatePresence>
+        {showAddProperty && (
+          <AddPropertyModal
+            onClose={() => setShowAddProperty(false)}
+            onCreated={() => {
+              setShowAddProperty(false);
+              load();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
