@@ -12,6 +12,7 @@ import { api, type LeaseOut, type PaymentOut, type MaintenanceOut } from "@/lib/
 import { useAuth } from "@/context/auth-context";
 import { tenantData } from "@/lib/mock-data";
 import Sidebar from "@/components/Sidebar";
+import JoinProperty from "@/components/JoinProperty";
 import { toast } from "sonner";
 
 export default function TenantDashboard() {
@@ -29,7 +30,8 @@ export default function TenantDashboard() {
     priority: "medium",
   });
 
-  useEffect(() => {
+  function loadDashboard() {
+    setLoading(true);
     Promise.all([
       api.get<LeaseOut[]>("/leases"),
       api.get<PaymentOut[]>("/payments?limit=5"),
@@ -43,6 +45,11 @@ export default function TenantDashboard() {
       })
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    loadDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Compute rent status from latest payment
@@ -85,6 +92,24 @@ export default function TenantDashboard() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // Self-signed-up tenant with no lease yet → show the "join a property" flow.
+  if (!loading && !lease) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-cream to-gray-50">
+        <Sidebar userType="tenant" currentPath="/tenant" pendingRequests={0} />
+        <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
+          <div className="mb-8">
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
+              Welcome, {user?.full_name?.split(" ")[0] ?? "there"}!
+            </h1>
+            <p className="text-gray-600">Let's connect you to your property to get started.</p>
+          </div>
+          <JoinProperty onApproved={loadDashboard} />
+        </div>
+      </div>
+    );
   }
 
   return (

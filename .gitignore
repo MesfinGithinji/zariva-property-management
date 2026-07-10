@@ -79,3 +79,7 @@ media/
 *.key
 *.cert
 secrets/
+.vercel
+
+# stray build log
+logs.txt

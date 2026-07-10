@@ -3,6 +3,9 @@
 import { motion } from "framer-motion";
 import { Mail, Lock, Eye, EyeOff, User, Phone, Building2, Home, ArrowRight, Shield, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { register } from "@/lib/auth";
+import { useAuth } from "@/context/auth-context";
 import { toast } from "sonner";
 
 export default function Signup() {
@@ -11,6 +14,16 @@ export default function Signup() {
   const [userType, setUserType] = useState<"landlord" | "tenant">("landlord");
   const [loading, setLoading] = useState(false);
 
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
+  const router = useRouter();
+  const { setUser } = useAuth();
+
   const stats = [
     { value: "500+", label: "Properties" },
     { value: "98%", label: "Satisfaction" },
@@ -18,13 +31,43 @@ export default function Signup() {
     { value: "10K+", label: "Happy Users" },
   ];
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!fullName.trim() || !email.trim() || !password) {
+      toast.error("Please fill in your name, email, and password.");
+      return;
+    }
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+    if (!agreedToTerms) {
+      toast.error("Please agree to the Terms of Service and Privacy Policy.");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const user = await register({
+        full_name: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        password,
+        role: userType,
+      });
+      setUser(user);
+      toast.success(`Welcome to Zariva, ${user.full_name.split(" ")[0]}!`);
+      router.push(user.role === "landlord" ? "/landlord" : "/tenant");
+    } catch (err: any) {
+      toast.error(err.message ?? "Could not create your account. Please try again.");
+    } finally {
       setLoading(false);
-      toast.info("Account registration coming soon! Use the demo credentials to explore.");
-    }, 800);
+    }
   }
 
   return (
@@ -155,7 +198,10 @@ export default function Signup() {
                   </div>
                   <input
                     type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     placeholder="John Kamau"
+                    autoComplete="name"
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-950 focus:ring-2 focus:ring-gold-500/20 focus:bg-white transition-all"
                   />
                 </div>
@@ -170,7 +216,10 @@ export default function Signup() {
                   </div>
                   <input
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
+                    autoComplete="email"
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-950 focus:ring-2 focus:ring-gold-500/20 focus:bg-white transition-all"
                   />
                 </div>
@@ -185,7 +234,10 @@ export default function Signup() {
                   </div>
                   <input
                     type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     placeholder="+254 712 345 678"
+                    autoComplete="tel"
                     className="w-full pl-11 pr-4 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-950 focus:ring-2 focus:ring-gold-500/20 focus:bg-white transition-all"
                   />
                 </div>
@@ -200,7 +252,10 @@ export default function Signup() {
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     className="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-950 focus:ring-2 focus:ring-gold-500/20 focus:bg-white transition-all"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -219,7 +274,10 @@ export default function Signup() {
                   </div>
                   <input
                     type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     className="w-full pl-11 pr-12 py-3.5 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-950 focus:ring-2 focus:ring-gold-500/20 focus:bg-white transition-all"
                   />
                   <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -232,6 +290,8 @@ export default function Signup() {
               {/* Terms */}
               <div className="flex items-start gap-3 pt-1">
                 <input type="checkbox" id="terms"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
                   className="mt-0.5 w-4 h-4 accent-primary-950 border-gray-300 rounded shrink-0" />
                 <label htmlFor="terms" className="text-sm text-gray-500">
                   I agree to the{" "}

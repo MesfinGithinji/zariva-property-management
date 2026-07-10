@@ -140,6 +140,32 @@ export interface PaymentSummary {
   month: string;
 }
 
+export interface PropertySearchResult {
+  id: number;
+  name: string;
+  location: string;
+  landlord_name: string | null;
+}
+
+export interface JoinRequestOut {
+  id: number;
+  reference_number: string;
+  tenant_id: number;
+  property_id: number;
+  message: string | null;
+  status: "pending" | "approved" | "approved_with_modifications" | "declined";
+  unit_id: number | null;
+  lease_id: number | null;
+  decision_by: string | null;
+  decision_date: string | null;
+  decline_reason: string | null;
+  created_at: string;
+  tenant_name: string | null;
+  tenant_email: string | null;
+  property_name: string | null;
+  unit_number: string | null;
+}
+
 export interface ConsentOut {
   id: number;
   reference_number: string;

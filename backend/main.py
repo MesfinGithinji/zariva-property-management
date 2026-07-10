@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import auth, properties, units, tenants, leases, payments, maintenance
-from app.routers import consent
+from app.routers import consent, join_requests
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -29,6 +29,7 @@ app.include_router(leases.router)
 app.include_router(payments.router)
 app.include_router(maintenance.router)
 app.include_router(consent.router)
+app.include_router(join_requests.router)
 
 
 @app.get("/", tags=["Health"])

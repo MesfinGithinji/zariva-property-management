@@ -13,6 +13,7 @@ from app.models.consent import (  # noqa
     SubletRequest, AlterationRequest,
     PetConsentRequest, PetDetail, GuarantorConsent,
 )
+from app.models.join_request import JoinRequest  # noqa
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)

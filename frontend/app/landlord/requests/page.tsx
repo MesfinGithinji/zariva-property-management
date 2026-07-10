@@ -2,14 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ClipboardList, Home, Wrench, PawPrint, ShieldCheck, CheckCircle2, XCircle, Clock, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { ClipboardList, Home, Wrench, PawPrint, ShieldCheck, UserPlus, CheckCircle2, XCircle, Clock, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { api, type SubletRequestOut, type AlterationRequestOut, type PetConsentOut, type DataSubjectRequestOut } from "@/lib/api";
+import { api, type SubletRequestOut, type AlterationRequestOut, type PetConsentOut, type DataSubjectRequestOut, type JoinRequestOut } from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
 import { FadeCard } from "@/components/ui/fade-card";
 import { toast } from "sonner";
 
-type Tab = "sublet" | "alteration" | "pet" | "dsr";
+type Tab = "join" | "sublet" | "alteration" | "pet" | "dsr";
+
+interface UnitOption {
+  id: number;
+  unit_number: string;
+  type: string;
+  rent_amount: number;
+  status: string;
+}
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
@@ -99,8 +107,140 @@ function DecisionPanel({ onDecide, loading, hasModifications = false, hasDeposit
   );
 }
 
+function JoinDecisionPanel({ propertyId, onApprove, onDecline, loading }: {
+  propertyId: number;
+  onApprove: (data: { unit_id: number; monthly_rent: number; deposit: number; start_date: string; end_date: string }) => void;
+  onDecline: (reason: string) => void;
+  loading: boolean;
+}) {
+  const [mode, setMode] = useState<"approve" | "decline">("approve");
+  const [units, setUnits] = useState<UnitOption[]>([]);
+  const [unitsLoading, setUnitsLoading] = useState(true);
+  const [unitId, setUnitId] = useState<string>("");
+  const [rent, setRent] = useState("");
+  const [deposit, setDeposit] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [declineReason, setDeclineReason] = useState("");
+
+  useEffect(() => {
+    api.get<UnitOption[]>(`/units/property/${propertyId}`)
+      .then((all) => setUnits(all.filter((u) => u.status === "vacant")))
+      .catch(() => setUnits([]))
+      .finally(() => setUnitsLoading(false));
+  }, [propertyId]);
+
+  // Pre-fill rent from the selected unit's listed rent.
+  function selectUnit(id: string) {
+    setUnitId(id);
+    const u = units.find((x) => String(x.id) === id);
+    if (u && !rent) setRent(String(u.rent_amount));
+    if (u && !deposit) setDeposit(String(u.rent_amount * 2));
+  }
+
+  const canApprove = unitId && rent && deposit && startDate && endDate;
+
+  return (
+    <div className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-200">
+      <p className="text-xs font-bold text-gray-700 uppercase tracking-wide">Review Join Request</p>
+      <div className="flex gap-2">
+        {(["approve", "decline"] as const).map((m) => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border capitalize ${
+              mode === m
+                ? m === "decline" ? "bg-red-600 text-white border-red-600" : "bg-primary-950 text-gold-400 border-primary-950"
+                : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            {m}
+          </button>
+        ))}
+      </div>
+
+      {mode === "approve" && (
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Assign Unit</label>
+            {unitsLoading ? (
+              <div className="flex items-center gap-2 text-xs text-gray-400 py-2"><Loader2 size={13} className="animate-spin" /> Loading units…</div>
+            ) : units.length === 0 ? (
+              <p className="text-xs text-amber-600 py-1">No vacant units in this property. Free up a unit before approving.</p>
+            ) : (
+              <select
+                value={unitId}
+                onChange={(e) => selectUnit(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+              >
+                <option value="">Select a vacant unit…</option>
+                {units.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.unit_number} · {u.type} · listed KES {u.rent_amount.toLocaleString()}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Monthly Rent (KES)</label>
+              <input type="number" value={rent} onChange={(e) => setRent(e.target.value)} placeholder="0"
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Deposit (KES)</label>
+              <input type="number" value={deposit} onChange={(e) => setDeposit(e.target.value)} placeholder="0"
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Lease Start</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">Lease End</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            </div>
+          </div>
+          <button
+            onClick={() => onApprove({ unit_id: Number(unitId), monthly_rent: parseFloat(rent), deposit: parseFloat(deposit), start_date: startDate, end_date: endDate })}
+            disabled={loading || !canApprove}
+            className="flex items-center gap-2 px-4 py-2 bg-primary-950 text-gold-400 text-xs font-bold rounded-lg hover:bg-primary-900 transition-all disabled:opacity-50"
+          >
+            {loading ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} />}
+            Approve & Create Lease
+          </button>
+        </div>
+      )}
+
+      {mode === "decline" && (
+        <div className="space-y-3">
+          <textarea
+            rows={2}
+            placeholder="Reason for declining (optional)…"
+            value={declineReason}
+            onChange={(e) => setDeclineReason(e.target.value)}
+            className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+          />
+          <button
+            onClick={() => onDecline(declineReason)}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all disabled:opacity-50"
+          >
+            {loading ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
+            Decline Request
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function LandlordRequestsPage() {
-  const [tab, setTab] = useState<Tab>("sublet");
+  const [tab, setTab] = useState<Tab>("join");
+  const [joins, setJoins] = useState<JoinRequestOut[]>([]);
   const [sublets, setSublets] = useState<SubletRequestOut[]>([]);
   const [alterations, setAlterations] = useState<AlterationRequestOut[]>([]);
   const [pets, setPets] = useState<PetConsentOut[]>([]);
@@ -113,11 +253,13 @@ export default function LandlordRequestsPage() {
 
   useEffect(() => {
     Promise.all([
+      api.get<JoinRequestOut[]>("/join-requests"),
       api.get<SubletRequestOut[]>("/consent/sublet"),
       api.get<AlterationRequestOut[]>("/consent/alterations"),
       api.get<PetConsentOut[]>("/consent/pets"),
       api.get<DataSubjectRequestOut[]>("/consent/data-subject-requests"),
-    ]).then(([subs, alts, petsData, dsrData]) => {
+    ]).then(([joinData, subs, alts, petsData, dsrData]) => {
+      setJoins(joinData);
       setSublets(subs);
       setAlterations(alts);
       setPets(petsData);
@@ -125,6 +267,26 @@ export default function LandlordRequestsPage() {
     }).catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  async function approveJoin(id: number, data: { unit_id: number; monthly_rent: number; deposit: number; start_date: string; end_date: string }) {
+    setDeciding(id);
+    try {
+      const updated = await api.post<JoinRequestOut>(`/join-requests/${id}/approve`, data);
+      setJoins((prev) => prev.map((r) => r.id === id ? updated : r));
+      toast.success("Approved — lease created and tenant linked.");
+    } catch (err: any) { toast.error(err.message); }
+    finally { setDeciding(null); }
+  }
+
+  async function declineJoin(id: number, reason: string) {
+    setDeciding(id);
+    try {
+      const updated = await api.post<JoinRequestOut>(`/join-requests/${id}/decline`, { decline_reason: reason || undefined });
+      setJoins((prev) => prev.map((r) => r.id === id ? updated : r));
+      toast.success("Request declined.");
+    } catch (err: any) { toast.error(err.message); }
+    finally { setDeciding(null); }
+  }
 
   async function decideSublet(id: number, data: any) {
     setDeciding(id);
@@ -167,6 +329,7 @@ export default function LandlordRequestsPage() {
   }
 
   const tabs = [
+    { id: "join" as Tab, label: "Join Requests", icon: UserPlus, pending: pendingCount(joins) },
     { id: "sublet" as Tab, label: "Sublet Requests", icon: Home, pending: pendingCount(sublets) },
     { id: "alteration" as Tab, label: "Alterations", icon: Wrench, pending: pendingCount(alterations) },
     { id: "pet" as Tab, label: "Pet Consents", icon: PawPrint, pending: pendingCount(pets) },
@@ -179,14 +342,14 @@ export default function LandlordRequestsPage() {
       <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         <FadeCard delay={0}>
           <div className="mb-8">
-            <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">Consent Management</p>
-            <h1 className="text-3xl font-bold text-gray-900">Consent Requests</h1>
-            <p className="text-gray-500 text-sm mt-1">Review and action tenant consent requests under the Kenya DPA 2019</p>
+            <p className="text-xs uppercase tracking-widest text-gold-600 font-semibold mb-1">Tenant Requests</p>
+            <h1 className="text-3xl font-bold text-gray-900">Requests</h1>
+            <p className="text-gray-500 text-sm mt-1">Approve tenant join requests and action consent requests under the Kenya DPA 2019</p>
           </div>
         </FadeCard>
 
         {/* Summary cards */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
           {tabs.map((t) => {
             const Icon = t.icon;
             return (
@@ -215,6 +378,42 @@ export default function LandlordRequestsPage() {
             </div>
           ) : (
             <div className="space-y-3">
+              {tab === "join" && joins.map((r) => (
+                <RequestCard
+                  key={r.id}
+                  refNo={r.reference_number}
+                  tenantName={r.tenant_name ?? "—"}
+                  status={r.status}
+                  date={r.created_at}
+                  expanded={expanded === r.id}
+                  onToggle={() => setExpanded(expanded === r.id ? null : r.id)}
+                >
+                  <div className="grid grid-cols-3 gap-3 text-xs mb-4">
+                    <Detail label="Property" value={r.property_name ?? "—"} />
+                    <Detail label="Tenant Email" value={r.tenant_email ?? "—"} />
+                    {r.unit_number && <Detail label="Assigned Unit" value={r.unit_number} />}
+                  </div>
+                  {r.message && <Detail label="Message" value={r.message} full />}
+                  {r.status === "pending" && (
+                    <div className="mt-4">
+                      <JoinDecisionPanel
+                        propertyId={r.property_id}
+                        onApprove={(d) => approveJoin(r.id, d)}
+                        onDecline={(reason) => declineJoin(r.id, reason)}
+                        loading={deciding === r.id}
+                      />
+                    </div>
+                  )}
+                  {r.status !== "pending" && r.decision_by && (
+                    <p className="text-xs text-gray-400 mt-3">
+                      {r.status === "declined" ? "Declined" : "Approved"} by {r.decision_by} on{" "}
+                      {r.decision_date ? format(parseISO(r.decision_date), "dd MMM yyyy") : "—"}
+                      {r.decline_reason && ` — ${r.decline_reason}`}
+                    </p>
+                  )}
+                </RequestCard>
+              ))}
+
               {tab === "sublet" && sublets.map((r) => (
                 <RequestCard
                   key={r.id}
@@ -301,7 +500,7 @@ export default function LandlordRequestsPage() {
                 <DsrCard key={r.id} dsr={r} onResolve={resolveDsr} deciding={deciding === r.id} expanded={expanded === r.id} onToggle={() => setExpanded(expanded === r.id ? null : r.id)} />
               ))}
 
-              {((tab === "sublet" && !sublets.length) || (tab === "alteration" && !alterations.length) || (tab === "pet" && !pets.length) || (tab === "dsr" && !dsrs.length)) && (
+              {((tab === "join" && !joins.length) || (tab === "sublet" && !sublets.length) || (tab === "alteration" && !alterations.length) || (tab === "pet" && !pets.length) || (tab === "dsr" && !dsrs.length)) && (
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
                   <ClipboardList size={36} className="mx-auto text-gray-200 mb-3" />
                   <p className="text-gray-400 text-sm">No requests in this category</p>

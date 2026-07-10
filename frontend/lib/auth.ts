@@ -40,3 +40,24 @@ export async function login(
   setCachedUser(user);
   return user;
 }
+
+export interface RegisterInput {
+  email: string;
+  password: string;
+  full_name: string;
+  phone?: string;
+  role: "landlord" | "tenant";
+}
+
+export async function register(input: RegisterInput): Promise<AuthUser> {
+  const data = await api.post<{
+    access_token: string;
+    role: string;
+    full_name: string;
+    user_id: number;
+  }>("/auth/register", input);
+  setToken(data.access_token);
+  const user = await api.get<AuthUser>("/auth/me");
+  setCachedUser(user);
+  return user;
+}
