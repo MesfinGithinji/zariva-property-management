@@ -341,13 +341,10 @@ export default function TenantMaintenancePage() {
                     />
                   </div>
 
-                  <button
-                    onClick={() => toast.info("Photo attachment coming soon!")}
-                    className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-400 hover:border-primary-300 hover:text-primary-600 transition-all"
-                  >
-                    <Upload size={16} />
-                    Attach photos (optional)
-                  </button>
+                  <p className="flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-xl text-xs text-gray-400">
+                    <Upload size={14} />
+                    Photo attachments coming soon
+                  </p>
                 </div>
 
                 <div className="flex gap-3 px-6 pb-6">

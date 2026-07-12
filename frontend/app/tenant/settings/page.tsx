@@ -2,11 +2,13 @@
 
 import { motion } from "framer-motion";
 import {
-  User, Mail, Phone, Lock, Bell, Smartphone,
-  Camera, ChevronRight, Shield, CheckCircle2,
+  User, Mail, Phone, Lock, Bell, Image as ImageIcon,
+  ChevronRight, Shield, Loader2,
 } from "lucide-react";
-import { tenantData } from "@/lib/mock-data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { api, type LeaseOut } from "@/lib/api";
+import { useAuth } from "@/context/auth-context";
+import { setCachedUser } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import { FadeCard } from "@/components/ui/fade-card";
 import { toast } from "sonner";
@@ -14,14 +16,16 @@ import { toast } from "sonner";
 const tabs = ["Profile", "Notifications", "Security"];
 
 export default function TenantSettingsPage() {
-  const { profile, currentLease, maintenanceRequests } = tenantData;
+  const { user, setUser } = useAuth();
   const [activeTab, setActiveTab] = useState("Profile");
-  const [form, setForm] = useState({
-    name: profile.name,
-    email: profile.email,
-    phone: profile.phone,
-    mpesaPhone: profile.phone,
-  });
+  const [lease, setLease] = useState<LeaseOut | null>(null);
+
+  const [form, setForm] = useState({ full_name: "", phone: "", profile_image: "" });
+  const [saving, setSaving] = useState(false);
+
+  const [pw, setPw] = useState({ current_password: "", new_password: "", confirm: "" });
+  const [changingPw, setChangingPw] = useState(false);
+
   const [notifications, setNotifications] = useState({
     paymentReminders: true,
     maintenanceUpdates: true,
@@ -30,19 +34,71 @@ export default function TenantSettingsPage() {
     promotions: false,
   });
 
-  const pendingRequests = maintenanceRequests.filter((r) => r.status !== "completed").length;
+  useEffect(() => {
+    if (user) {
+      setForm({ full_name: user.full_name, phone: user.phone ?? "", profile_image: user.profile_image ?? "" });
+    }
+  }, [user]);
 
-  function handleSave() {
-    toast.success("Settings saved!");
+  useEffect(() => {
+    api.get<LeaseOut[]>("/leases")
+      .then((leases) => setLease(leases.find((l) => l.status === "active" || l.status === "ending") ?? leases[0] ?? null))
+      .catch(() => {});
+  }, []);
+
+  async function handleSaveProfile() {
+    setSaving(true);
+    try {
+      const updated = await api.patch<typeof user>("/auth/me", {
+        full_name: form.full_name,
+        phone: form.phone || null,
+        profile_image: form.profile_image || null,
+      });
+      if (updated) {
+        setUser(updated);
+        setCachedUser(updated);
+      }
+      toast.success("Profile updated.");
+    } catch (err: any) {
+      toast.error(err.message ?? "Could not save profile.");
+    } finally {
+      setSaving(false);
+    }
   }
+
+  async function handleChangePassword() {
+    if (!pw.current_password || !pw.new_password) {
+      toast.error("Please fill in your current and new password.");
+      return;
+    }
+    if (pw.new_password.length < 8) {
+      toast.error("New password must be at least 8 characters.");
+      return;
+    }
+    if (pw.new_password !== pw.confirm) {
+      toast.error("New passwords do not match.");
+      return;
+    }
+    setChangingPw(true);
+    try {
+      await api.post("/auth/change-password", {
+        current_password: pw.current_password,
+        new_password: pw.new_password,
+      });
+      toast.success("Password updated.");
+      setPw({ current_password: "", new_password: "", confirm: "" });
+    } catch (err: any) {
+      toast.error(err.message ?? "Could not update password.");
+    } finally {
+      setChangingPw(false);
+    }
+  }
+
+  const initials = (user?.full_name ?? "?").split(" ").map((n) => n[0]).join("").slice(0, 2);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-cream to-gray-50">
-      <Sidebar
-        userType="tenant"
-        currentPath="/tenant/settings"
-        pendingRequests={pendingRequests}
-      />
+      <Sidebar userType="tenant" currentPath="/tenant/settings" />
 
       <div className="lg:ml-72 p-4 pt-20 lg:pt-8 lg:p-8">
         {/* Header */}
@@ -78,9 +134,7 @@ export default function TenantSettingsPage() {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-all text-left border-b border-gray-50 last:border-0 ${
-                      activeTab === tab
-                        ? "bg-primary-950 text-gold-400"
-                        : "text-gray-600 hover:bg-gray-50"
+                      activeTab === tab ? "bg-primary-950 text-gold-400" : "text-gray-600 hover:bg-gray-50"
                     }`}
                   >
                     <Icon size={16} />
@@ -92,15 +146,17 @@ export default function TenantSettingsPage() {
             </div>
 
             {/* Lease info card */}
-            <div className="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Current Lease</p>
-              <p className="text-sm font-semibold text-gray-800">{currentLease.property}</p>
-              <p className="text-xs text-gray-400">Unit {currentLease.unit} · {currentLease.unitType}</p>
-              <div className="mt-2 pt-2 border-t border-gray-50">
-                <p className="text-xs text-gray-400">Monthly Rent</p>
-                <p className="text-sm font-bold text-primary-700 num">KES {currentLease.monthlyRent.toLocaleString()}</p>
+            {lease && (
+              <div className="mt-4 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Current Lease</p>
+                <p className="text-sm font-semibold text-gray-800">{lease.property_name}</p>
+                <p className="text-xs text-gray-400">Unit {lease.unit_number}</p>
+                <div className="mt-2 pt-2 border-t border-gray-50">
+                  <p className="text-xs text-gray-400">Monthly Rent</p>
+                  <p className="text-sm font-bold text-primary-700 num">KES {lease.monthly_rent.toLocaleString()}</p>
+                </div>
               </div>
-            </div>
+            )}
           </motion.div>
 
           {/* Content */}
@@ -111,71 +167,78 @@ export default function TenantSettingsPage() {
 
                 {/* Avatar */}
                 <div className="flex items-center gap-5 mb-8 pb-8 border-b border-gray-100">
-                  <div className="relative">
-                    <div className="w-20 h-20 rounded-full overflow-hidden">
-                      <img src={profile.profileImage} alt={profile.name} className="w-full h-full object-cover" />
-                    </div>
-                    <button
-                      onClick={() => toast.info("Photo upload coming soon!")}
-                      className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary-950 rounded-full flex items-center justify-center border-2 border-white hover:bg-primary-900 transition-colors"
-                    >
-                      <Camera size={12} className="text-gold-400" />
-                    </button>
+                  <div className="w-20 h-20 rounded-full overflow-hidden bg-primary-100 flex items-center justify-center shrink-0">
+                    {form.profile_image ? (
+                      <img src={form.profile_image} alt={user?.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-primary-700 font-bold text-xl">{initials}</span>
+                    )}
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{profile.name}</p>
-                    <p className="text-sm text-gray-500">{profile.email}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Tenant · {currentLease.property}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900">{user?.full_name}</p>
+                    <p className="text-sm text-gray-500">{user?.email}</p>
+                    <div className="relative mt-2">
+                      <ImageIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="url"
+                        value={form.profile_image}
+                        onChange={(e) => setForm({ ...form, profile_image: e.target.value })}
+                        placeholder="Paste an image URL for your avatar"
+                        className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary-500/30 transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Form */}
                 <div className="space-y-4">
-                  {[
-                    { key: "name", label: "Full Name", icon: User, type: "text" },
-                    { key: "email", label: "Email Address", icon: Mail, type: "email" },
-                    { key: "phone", label: "Phone Number", icon: Phone, type: "tel" },
-                  ].map(({ key, label, icon: Icon, type }) => (
-                    <div key={key}>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                        {label}
-                      </label>
-                      <div className="relative">
-                        <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                          type={type}
-                          value={form[key as keyof typeof form]}
-                          onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                          className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
-                        />
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* M-Pesa */}
-                  <div className="pt-4 border-t border-gray-100">
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">
-                      M-Pesa Phone Number
-                    </label>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Full Name</label>
                     <div className="relative">
-                      <Smartphone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
-                        type="tel"
-                        value={form.mpesaPhone}
-                        onChange={(e) => setForm({ ...form, mpesaPhone: e.target.value })}
+                        type="text"
+                        value={form.full_name}
+                        onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                         className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
-                        placeholder="+254 7XX XXX XXX"
                       />
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">Used for M-Pesa payment notifications and prompts</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Email Address</label>
+                    <div className="relative">
+                      <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="email"
+                        value={user?.email ?? ""}
+                        disabled
+                        className="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-500 cursor-not-allowed"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">Email can't be changed here — contact support.</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1.5">Phone Number</label>
+                    <div className="relative">
+                      <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="tel"
+                        value={form.phone}
+                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                        placeholder="+254 7XX XXX XXX"
+                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <div className="flex justify-end mt-6">
                   <button
-                    onClick={handleSave}
-                    className="px-6 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl transition-all text-sm border border-gold-500/20"
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl transition-all text-sm border border-gold-500/20 disabled:opacity-60"
                   >
+                    {saving && <Loader2 size={14} className="animate-spin" />}
                     Save Changes
                   </button>
                 </div>
@@ -201,10 +264,7 @@ export default function TenantSettingsPage() {
                         <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
                       </div>
                       <button
-                        onClick={() => {
-                          setNotifications({ ...notifications, [key]: !notifications[key as keyof typeof notifications] });
-                          toast.success(`${label} ${!notifications[key as keyof typeof notifications] ? "enabled" : "disabled"}`);
-                        }}
+                        onClick={() => setNotifications({ ...notifications, [key]: !notifications[key as keyof typeof notifications] })}
                         className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none ${
                           notifications[key as keyof typeof notifications] ? "bg-primary-950" : "bg-gray-200"
                         }`}
@@ -218,15 +278,9 @@ export default function TenantSettingsPage() {
                     </div>
                   ))}
                 </div>
-
-                <div className="flex justify-end mt-6">
-                  <button
-                    onClick={handleSave}
-                    className="px-6 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl transition-all text-sm border border-gold-500/20"
-                  >
-                    Save Preferences
-                  </button>
-                </div>
+                <p className="text-xs text-gray-400 mt-6 border-t border-gray-50 pt-4">
+                  Notification delivery (email/SMS) is being rolled out — these preferences are saved to your device for now.
+                </p>
               </FadeCard>
             )}
 
@@ -238,13 +292,19 @@ export default function TenantSettingsPage() {
                   <div className="pb-6 border-b border-gray-100">
                     <h3 className="text-sm font-semibold text-gray-800 mb-4">Change Password</h3>
                     <div className="space-y-3">
-                      {["Current Password", "New Password", "Confirm New Password"].map((label) => (
-                        <div key={label}>
+                      {([
+                        { key: "current_password", label: "Current Password" },
+                        { key: "new_password", label: "New Password" },
+                        { key: "confirm", label: "Confirm New Password" },
+                      ] as const).map(({ key, label }) => (
+                        <div key={key}>
                           <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
                           <div className="relative">
                             <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                               type="password"
+                              value={pw[key]}
+                              onChange={(e) => setPw({ ...pw, [key]: e.target.value })}
                               placeholder="••••••••"
                               className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
                             />
@@ -252,57 +312,24 @@ export default function TenantSettingsPage() {
                         </div>
                       ))}
                       <button
-                        onClick={() => toast.success("Password updated!")}
-                        className="mt-2 px-5 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl transition-all text-sm border border-gold-500/20"
+                        onClick={handleChangePassword}
+                        disabled={changingPw}
+                        className="mt-2 flex items-center gap-2 px-5 py-2.5 bg-primary-950 hover:bg-primary-900 text-gold-400 font-semibold rounded-xl transition-all text-sm border border-gold-500/20 disabled:opacity-60"
                       >
+                        {changingPw && <Loader2 size={14} className="animate-spin" />}
                         Update Password
                       </button>
                     </div>
                   </div>
 
-                  <div className="pb-6 border-b border-gray-100">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-sm font-semibold text-gray-800">Two-Factor Authentication</h3>
-                        <p className="text-xs text-gray-400 mt-0.5">Secure your account with 2FA</p>
-                      </div>
-                      <button
-                        onClick={() => toast.info("2FA setup coming soon!")}
-                        className="px-4 py-2 bg-emerald-50 text-emerald-700 font-semibold rounded-xl text-xs hover:bg-emerald-100 transition-all border border-emerald-200"
-                      >
-                        Enable 2FA
-                      </button>
+                  <div className="flex items-center justify-between opacity-60">
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-800">Two-Factor Authentication</h3>
+                      <p className="text-xs text-gray-400 mt-0.5">Coming soon — extra login security via an authenticator app.</p>
                     </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-800 mb-4">Active Sessions</h3>
-                    {[
-                      { device: "Chrome on Windows 11", location: "Nairobi, Kenya", time: "Now (current session)", current: true },
-                      { device: "Safari on iPhone 15", location: "Nairobi, Kenya", time: "Yesterday", current: false },
-                    ].map((session) => (
-                      <div key={session.device} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
-                        <div>
-                          <p className="text-sm font-medium text-gray-800 flex items-center gap-2">
-                            {session.device}
-                            {session.current && (
-                              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">
-                                Current
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-gray-400">{session.location} · {session.time}</p>
-                        </div>
-                        {!session.current && (
-                          <button
-                            onClick={() => toast.success("Session revoked")}
-                            className="text-xs text-red-500 hover:text-red-700 font-medium"
-                          >
-                            Revoke
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                    <span className="px-4 py-2 bg-gray-100 text-gray-400 font-semibold rounded-xl text-xs border border-gray-200 cursor-not-allowed">
+                      Coming soon
+                    </span>
                   </div>
                 </div>
               </FadeCard>

@@ -69,3 +69,21 @@ def update_profile(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    payload: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    current = payload.get("current_password")
+    new = payload.get("new_password")
+    if not current or not new:
+        raise HTTPException(status_code=400, detail="Current and new password are required")
+    if not verify_password(current, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if len(new) < 8:
+        raise HTTPException(status_code=400, detail="New password must be at least 8 characters")
+    current_user.hashed_password = hash_password(new)
+    db.commit()
